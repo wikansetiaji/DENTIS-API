@@ -1,2 +1,2 @@
-web: python manage.py runserver 0.0.0.0
+web: gunicorn dentis_api.wsgi
 release: python manage.py migrate
