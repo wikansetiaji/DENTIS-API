@@ -12,3 +12,7 @@ class Pasien(models.Model):
 class Dokter(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     nip = models.CharField(max_length=255, null=False)
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255, null=False)
+    answer = models.CharField(max_length=255, null=False)

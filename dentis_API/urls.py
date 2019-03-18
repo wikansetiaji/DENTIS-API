@@ -1,4 +1,4 @@
-"""edr_API URL Configuration
+"""dentis_API URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.1/topics/http/urls/
@@ -32,5 +32,8 @@ urlpatterns = [
     path('pasien/<int:id>/', views.PasienDetailView.as_view()),
     path('dokter/', views.DoktersView.as_view()),
     path('dokter/<int:id>/', views.DokterDetailView.as_view()),
+    path('faqs/', views.FAQsView.as_view()),
+    path('faqs/<int:id>/', views.FAQDetailView.as_view()),
+    path('news/', views.NewsView.as_view()),
     url(r'^logout/',views.LogoutView.as_view({'post':'post'})),
 ]

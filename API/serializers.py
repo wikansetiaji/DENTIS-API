@@ -194,3 +194,48 @@ class DokterPatchSerializer(serializers.Serializer):
             msg = "Must provide username, password, email, and nip"
             raise exceptions.ValidationError(msg)
         return data
+
+class FAQPostSerializer(serializers.Serializer):
+    question = serializers.CharField()
+    answer = serializers.CharField()
+
+    def validate(self, data):
+        question = data.get("question", "")
+        answer = data.get("answer", "")
+        if question and answer:
+            try:
+                faq = FAQ(question=question, answer=answer)
+                faq.save()
+            except:
+                msg = "Error creating FAQ"
+                raise exceptions.ValidationError(msg)
+            data["faq"] = faq
+        else:
+            msg = "Must provide question and answer"
+            raise exceptions.ValidationError(msg)
+        return data
+    
+class FAQGetSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    question = serializers.CharField()
+    answer= serializers.CharField()
+
+class FAQPatchSerializer(serializers.Serializer):
+    question = serializers.CharField()
+    answer= serializers.CharField()
+    def validate(self, data):
+        question= data.get("question", "")
+        answer= data.get("answer", "")
+        if answer and question:
+            try:
+                self.instance.question=question
+                self.instance.answer=answer
+                self.instance.save()
+            except:
+                msg = "FAQ edit error"
+                raise exceptions.ValidationError(msg)
+            data["faq"] = self.instance
+        else:
+            msg = "Must provide question and answer"
+            raise exceptions.ValidationError(msg)
+        return data

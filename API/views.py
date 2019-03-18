@@ -9,6 +9,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.http import Http404
 from .permissions import *
+import requests
+import json
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -105,3 +107,55 @@ class DokterDetailView(APIView):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FAQsView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            permission_classes = [IsAdminOrDokter]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    def post(self, request, format=None):
+        serializer = FAQPostSerializer(data=request.data) #validates and saves faq
+        if serializer.is_valid():
+            faq = serializer.validated_data["faq"]
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, format=None):
+        queryset = FAQ.objects.all()
+        serializer = FAQGetSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class FAQDetailView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'PATCH':
+            permission_classes = [IsAdminOrDokter]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    def get_object(self, id):
+        try:
+            return FAQ.objects.get(id=id)
+        except FAQ.DoesNotExist:
+            raise Http404
+    def get(self, request, id, format=None):
+        faq = self.get_object(id)
+        serializer = FAQGetSerializer(faq)
+        return Response(serializer.data)
+    def patch(self, request, id, format=None):
+        faq = self.get_object(id)
+        serializer = FAQPatchSerializer(faq, data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class NewsView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, format=None):
+        url = ('https://newsapi.org/v2/top-headlines?'
+       'sortBy=popularity&'
+       'apiKey=cf8b4fa2bc6b41e2961016c971f52c4a'
+       'country=id'
+       'category=health')
+        r = requests.get(url)
+        return Response(json.loads(r.content))
