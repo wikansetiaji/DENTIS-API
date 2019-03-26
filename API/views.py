@@ -11,6 +11,8 @@ from django.http import Http404
 from .permissions import *
 import requests
 import json
+from django.views.decorators.csrf import csrf_exempt
+
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
