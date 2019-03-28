@@ -154,10 +154,7 @@ class FAQDetailView(APIView):
 class NewsView(APIView):
     permission_classes = (IsAuthenticated,)
     def get(self, request, format=None):
-        url = ('https://newsapi.org/v2/top-headlines?'
-       'sortBy=popularity&'
-       'apiKey=cf8b4fa2bc6b41e2961016c971f52c4a'
-       'country=id'
-       'category=health')
+        url = ('https://newsapi.org/v2/everything?q=health&sortBy=publishedAt&apiKey=406b52057db042618edbd541bfaccc8b'
+        )
         r = requests.get(url)
         return Response(json.loads(r.content))
