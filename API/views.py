@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from .serializers import *
 from django.contrib.auth import login as django_login, logout as django_logout
-from rest_framework import views, viewsets, filters, mixins
+from rest_framework import views, viewsets, filters, mixins, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework import status
+from .models import Statistics
 from django.http import Http404
 from .permissions import *
 import requests
@@ -161,3 +162,10 @@ class NewsView(APIView):
        'category=health')
         r = requests.get(url)
         return Response(json.loads(r.content))
+
+class ListStatisticsView(generics.ListAPIView):
+    """
+    Provides a get method handler.
+    """
+    queryset = Statistics.objects.all()
+    serializer_class = StatisticsSerializer

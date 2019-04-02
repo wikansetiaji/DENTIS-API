@@ -35,5 +35,6 @@ urlpatterns = [
     path('faqs/', views.FAQsView.as_view()),
     path('faqs/<int:id>/', views.FAQDetailView.as_view()),
     path('news/', views.NewsView.as_view()),
+    path('statistics/', views.ListStatisticsView.as_view()),
     url(r'^logout/',views.LogoutView.as_view({'post':'post'})),
 ]

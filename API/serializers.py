@@ -239,3 +239,8 @@ class FAQPatchSerializer(serializers.Serializer):
             msg = "Must provide question and answer"
             raise exceptions.ValidationError(msg)
         return data
+
+class StatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Statistics
+        fields = ("image_base64", "stats_type")
