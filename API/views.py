@@ -52,9 +52,9 @@ class PasiensView(APIView):
     def post(self, request, format=None):
         serializer = PasienPostSerializer(data=request.data) #validates and saves pasien
         if serializer.is_valid():
-            user = serializer.validated_data["user"]
-            django_login(request, user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            #user = serializer.validated_data["user"]
+            #django_login(request, user)
+            return Response(serializer.validated_data["user"].id, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def get(self, request, format=None):
         queryset = Pasien.objects.all()
@@ -166,3 +166,75 @@ class ListStatisticsView(generics.ListAPIView):
     """
     queryset = Statistics.objects.all()
     serializer_class = StatisticsSerializer
+
+class PemeriksaanAwalView(viewsets.ViewSet):
+    def post(self, request):
+        serializer = PemeriksaanAwalPostSerializer(data=request.data)
+        if serializer.is_valid():
+            alergi = None
+            riwayat_penyakit = None
+            tekanan_darah = None
+            berat = None
+            tinggi = None
+
+            try:
+                alergi = serializer.data["alergi"]
+            except:
+                pass
+
+            try:
+                riwayat_penyakit = serializer.data["riwayatPenyakit"]
+            except:
+                pass
+
+            try:
+                tekanan_darah = serializer.data["tekananDarah"]
+            except:
+                pass
+
+            try:
+                berat = serializer.data["berat"]
+            except:
+                pass
+            
+            try:
+                tinggi = serializer.data["tinggi"]
+            except:
+                pass
+
+            rekamMedis = RekamMedis(
+                anamnesa = serializer.data["anamnesa"],
+                pasien = Pasien.objects.get(id=serializer.data["idPasien"]),
+                dokter = Dokter.objects.get(user_id=request.user.id),
+                alergi = alergi,
+                riwayat_penyakit = riwayat_penyakit,
+                tekanan_darah = tekanan_darah,
+                berat = berat,
+                tinggi = tinggi,
+            )
+            rekamMedis.save()
+            return Response({"id":rekamMedis.id, "data":serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class OdontogramView(viewsets.ViewSet):
+    def post(self, request):
+        serializer = OdontogramPostSerializer(data=request.data)
+        if serializer.is_valid():
+            for i in serializer.data["gigi"]:
+                o = None
+                try:
+                    o = i["o"]
+                except:
+                    pass
+                gigi = Gigi(
+                    kode=i["kode"],
+                    d = i["d"],
+                    l = i["l"],
+                    o = o,
+                    m = i["m"],
+                    v = i["v"],
+                    rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"])
+                )
+                gigi.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
