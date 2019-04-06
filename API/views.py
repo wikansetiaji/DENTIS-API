@@ -160,13 +160,6 @@ class NewsView(APIView):
         r = requests.get(url)
         return Response(json.loads(r.content))
 
-class ListStatisticsView(generics.ListAPIView):
-    """
-    Provides a get method handler.
-    """
-    queryset = Statistics.objects.all()
-    serializer_class = StatisticsSerializer
-
 class PemeriksaanAwalView(viewsets.ViewSet):
     def post(self, request):
         serializer = PemeriksaanAwalPostSerializer(data=request.data)
@@ -238,3 +231,18 @@ class OdontogramView(viewsets.ViewSet):
                 gigi.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class StatisticsView(APIView):
+    """
+    Provides a get method handler.
+    """
+    def get(self, request, format=None):
+        
+        # Get All Gigi
+        queryset = Gigi.objects.all()
+        print(queryset)
+        serializer = GigiSerializer(queryset, many=True)
+
+        # Get All 
+
+        return Response(serializer.data)

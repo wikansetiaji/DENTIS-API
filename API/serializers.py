@@ -252,11 +252,6 @@ class FAQPatchSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
         return data
 
-class StatisticsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Statistics
-        fields = ("image_base64", "stats_type")
-
 class PemeriksaanAwalPostSerializer(serializers.Serializer):
     anamnesa = serializers.CharField()
     alergi = serializers.CharField(required=False)
