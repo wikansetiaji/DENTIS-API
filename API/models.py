@@ -19,10 +19,8 @@ class FAQ(models.Model):
     answer = models.CharField(max_length=255, null=False)
 
 class Statistics(models.Model):
-    image_base64 = models.CharField(max_length=255, null=False)
-    stats_type = models.CharField(max_length=255, null=False)
-    def __str__(self):
-        return "{} - {}".format(self.image_base64, self.stats_type)
+    image = models.ImageField(upload_to='charts/%Y/%m/%d', null=True)
+    tipe = models.CharField(max_length=255, null=False)
 
 class RekamMedis(models.Model):
     anamnesa = models.CharField(max_length=255, null=False)
