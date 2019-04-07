@@ -23,6 +23,13 @@ class IsAdmin(permissions.BasePermission):
         print(user)
         return User.objects.get(id=user.id).is_superuser
 
+class IsManajer(permissions.BasePermission):
+    message = 'Only Manajer can view this page'
+    def has_permission(self, request, view):
+        user = request.user
+        print(user)
+        return User.objects.get(id=user.id).is_manajer
+
 class IsAdminOrDokter(permissions.BasePermission):
     message = 'Only Admins and Dokters can view this page'
     def has_permission(self, request, view):
@@ -37,10 +44,9 @@ class IsAdminOrPasien(permissions.BasePermission):
         print(user)
         return User.objects.get(id=user.id).is_superuser or User.objects.get(id=user.id).is_pasien
 
-class IsAdminOrOwner(permissions.BasePermission):
-    message = 'Only Admins and Owners can view this page'
+class IsAdminOrManajer(permissions.BasePermission):
+    message = 'Only Admins and Manajer can view this page'
     def has_permission(self, request, view):
         user = request.user
-        ownerId=view.kwargs['id']
         print(user)
-        return User.objects.get(id=user.id).is_superuser or user.id==ownerId
+        return User.objects.get(id=user.id).is_superuser or User.objects.get(id=user.id).is_manajer

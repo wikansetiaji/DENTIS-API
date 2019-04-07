@@ -4,6 +4,7 @@ from .models import *
 admin.site.register(Pasien)
 admin.site.register(Dokter)
 admin.site.register(User)
+admin.site.register(Manajer)
 admin.site.register(FAQ)
 admin.site.register(Statistics)
 admin.site.register(RekamMedis)

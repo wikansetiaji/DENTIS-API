@@ -41,6 +41,15 @@ class PasienLoginView(viewsets.ViewSet):
         django_login(request, user)
         return Response({"id": user.id}, status=200)
 
+class ManajerLoginView(viewsets.ViewSet):
+    def post(self, request):
+        print(request.data)
+        serializer = ManajerLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        django_login(request, user)
+        return Response({"id": user.id}, status=200)
+
 class AdminLoginView(viewsets.ViewSet):
     def post(self, request):
         print(request.data)
@@ -70,7 +79,7 @@ class PasiensView(APIView):
         return Response(serializer.data)
 
 class PasienDetailView(APIView):
-    permission_classes = (IsAdminOrOwner,IsAuthenticated,)
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
     def get_object(self, id):
         try:
             return Pasien.objects.get(user_id=id)
@@ -94,7 +103,7 @@ class PasienDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class DoktersView(APIView):
-    permission_classes = (IsAdmin,IsAuthenticated,)
+    permission_classes = (IsAdmin, IsAuthenticated,)
     def post(self, request, format=None):
         serializer = DokterPostSerializer(data=request.data) #validates and saves dokter
         if serializer.is_valid():
@@ -108,7 +117,7 @@ class DoktersView(APIView):
         return Response(serializer.data)
 
 class DokterDetailView(APIView):
-    permission_classes = (IsAdminOrOwner,IsAuthenticated,)
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
     def get_object(self, id):
         try:
             return Dokter.objects.get(user_id=id)
@@ -131,6 +140,42 @@ class DokterDetailView(APIView):
         #serializer = PasienDeleteSerializer(pasien)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class ManajerView(APIView):
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
+    def post(self, request, format=None):
+        serializer = ManajerPostSerializer(data=request.data) #validates and saves manajer
+        if serializer.is_valid():
+            #user = serializer.validated_data["user"]
+            #django_login(request, user)
+            return Response(serializer.validated_data["user"].id, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, format=None):
+        queryset = Manajer.objects.all()
+        serializer = ManajerGetSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class ManajerDetailView(APIView):
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
+    def get_object(self, id):
+        try:
+            return Manajer.objects.get(user_id=id)
+        except Manajer.DoesNotExist:
+            raise Http404
+    def get(self, request, id, format=None):
+        manajer = self.get_object(id)
+        serializer = ManajerGetSerializer(manajer)
+        return Response(serializer.data)
+    def patch(self, request, id, format=None):
+        manajer = self.get_object(id)
+        serializer = ManajerPatchSerializer(manajer, data=request.data,context={'email': request.data["email"], 'password':request.data["password"]})
+        if serializer.is_valid():   
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        manajer = self.get_object(id)
+        if manajer.user != None :
+            manajer.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class FAQsView(APIView):
     def get_permissions(self):
