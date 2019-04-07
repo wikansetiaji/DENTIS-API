@@ -117,8 +117,8 @@ class PasienPostSerializer(serializers.Serializer):
                 data["user"] = user
             else:
                 try:
-                    user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)                   
-                    pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat,tanggalLahir=tanggalLahir)
+                    #user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)                   
+                    pasien = Pasien(nama=nama,jenisKelamin=jenisKelamin)
                     pasien.save()
                 except():
                     msg = "Error creating pasien"
@@ -327,3 +327,7 @@ class OHISSerializer(serializers.Serializer):
     kondisi = serializers.ListField(
         child=KondisiSerializer()
     )
+
+class FotoRontgenSerializer(serializers.Serializer):
+    idRekamMedis = serializers.CharField()
+    foto = serializers.ImageField()

@@ -20,6 +20,7 @@ import io
 from io import BytesIO
 import matplotlib.pyplot as plt
 from datetime import datetime
+from rest_framework.parsers import FileUploadParser
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -310,3 +311,19 @@ class StatisticsView(APIView):
         stats.save()
 
         return Response(stats.image.url)
+
+class FotoRontgenView(APIView):
+    parser_class = (FileUploadParser,)
+
+    def post(self, request, *args, **kwargs):
+
+      file_serializer = FotoRontgenSerializer(data=request.data)
+
+      if file_serializer.is_valid():
+          foto = request.FILES['foto']
+          print(file_serializer.data["foto"])
+          foto = FotoRontgen(foto=foto, rekam_medis=RekamMedis.objects.get(id=file_serializer.data["idRekamMedis"]))
+          foto.save()
+          return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+      else:
+          return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
