@@ -316,7 +316,7 @@ class StatisticsView(APIView):
             index = np.arange(len(element))
             
             figure = io.BytesIO()
-            plt.bar(index, frequency)
+            plt.bar(index, frequency, color=(0.1, 0.1, 0.1, 0.1),  edgecolor='blue')
             plt.xlabel('Hari', fontsize=10)
             plt.ylabel('Jumlah Pengunjung', fontsize=10)
             plt.xticks(index, element, fontsize=10, rotation=30)
@@ -358,8 +358,8 @@ class StatisticsView(APIView):
             figure = io.BytesIO()
             
             fig1, ax1 = plt.subplots()
-            colors = ['#5BBAE6', '#B6DA54', '#FAC464', '#8CD3FD', '#D898CC',\
-            '#F1D24A', '#93B9C4', '#CCC5A8', '#51BACE', '#DBDB47', '#99ABF3']
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
             ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
             ax1.axis('equal')
             plt.tight_layout()
@@ -375,6 +375,7 @@ class StatisticsView(APIView):
 
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
         elif tipe == 'ohis':
             ## Statistik O-His
             queryset = OHIS.objects.all()
@@ -398,8 +399,8 @@ class StatisticsView(APIView):
             figure = io.BytesIO()
             
             fig1, ax1 = plt.subplots()
-            colors = ['#5BBAE6', '#B6DA54', '#FAC464', '#8CD3FD', '#D898CC',\
-            '#F1D24A', '#93B9C4', '#CCC5A8', '#51BACE', '#DBDB47', '#99ABF3']
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
             ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
             ax1.axis('equal')
             plt.tight_layout()
@@ -415,5 +416,6 @@ class StatisticsView(APIView):
 
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response("Error", status=status.HTTP_400_BAD_REQUEST)
