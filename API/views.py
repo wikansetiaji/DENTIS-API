@@ -13,7 +13,12 @@ from .permissions import *
 import requests
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+import numpy as np
+from collections import Counter
+from django.core.files.images import ImageFile
+import io
+from io import BytesIO
+import matplotlib.pyplot as plt
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -240,9 +245,43 @@ class StatisticsView(APIView):
         
         # Get All Gigi
         queryset = Gigi.objects.all()
-        print(queryset)
         serializer = GigiSerializer(queryset, many=True)
 
-        # Get All 
+        all_gigi = []
+        for gigi in serializer.data:
+            status_gigi = list(gigi.values())[1:]
+            print(status_gigi)
+            all_gigi.append(status_gigi)
 
-        return Response(serializer.data)
+        all_gigi = np.array(all_gigi).flatten().tolist()
+        element = Counter(all_gigi).keys() 
+        frequency = Counter(all_gigi).values()
+
+        print(element)
+        print(frequency)
+
+        figure = io.BytesIO()
+        plt.plot(list(element), list(frequency))
+        
+        # # Pie chart
+        # labels = ['Frogs', 'Hogs', 'Dogs', 'Logs']
+        # sizes = [15, 30, 45, 10]
+        # # only "explode" the 2nd slice (i.e. 'Hogs')
+        # explode = (0, 0.1, 0, 0)
+        # #add colors
+        # colors = ['#ff9999','#66b3ff','#99ff99','#ffcc99']
+        # fig1, ax1 = plt.subplots()
+        # ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
+        #         shadow=True, startangle=90)
+        # # Equal aspect ratio ensures that pie is drawn as a circle
+        # ax1.axis('equal')
+        # plt.tight_layout()
+        # plt.show()
+        
+        plt.savefig(figure, format="png")
+        content_file = ImageFile(figure)
+        stats = Statistics(tipe="Kondisi")
+        stats.image.save("Kondisi.png", content_file)
+        stats.save()
+
+        return Response(json.dumps(all_gigi))
