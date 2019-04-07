@@ -316,7 +316,7 @@ class StatisticsView(APIView):
             index = np.arange(len(element))
             
             figure = io.BytesIO()
-            plt.bar(index, frequency, color=(0.1, 0.1, 0.1, 0.1),  edgecolor='blue')
+            plt.bar(index, frequency, color=['#4878BC'])
             plt.xlabel('Hari', fontsize=10)
             plt.ylabel('Jumlah Pengunjung', fontsize=10)
             plt.xticks(index, element, fontsize=10, rotation=30)
