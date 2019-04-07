@@ -308,10 +308,10 @@ class FAQPatchSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
         return data
 
-class StatisticsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Statistics
-        fields = ("image_base64", "stats_type")
+class StatisticsSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+    tipe = serializers.CharField()
+    result = serializers.CharField()
 
 class PemeriksaanAwalPostSerializer(serializers.Serializer):
     anamnesa = serializers.CharField()
@@ -361,6 +361,9 @@ class OHISSerializer(serializers.Serializer):
     kondisi = serializers.ListField(
         child=KondisiSerializer()
     )
+
+class OHISGetSerializer(serializers.Serializer):
+    kondisi = serializers.CharField()
 
 class RekamMedisSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField()
