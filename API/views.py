@@ -248,22 +248,23 @@ class StatisticsView(APIView):
         queryset = Gigi.objects.all()
         serializer = GigiSerializer(queryset, many=True)
 
-        all_gigi = [x for x in range(-1, 12)]
+        all_gigi = [[x for x in range(-1, 11)]]
+        all_gigi_plot = []
         for gigi in serializer.data:
             status_gigi = list(gigi.values())[1:]
             print(status_gigi)
             all_gigi.append(status_gigi)
+            all_gigi_plot.append(status_gigi)
 
-        all_gigi = np.array(all_gigi).flatten().tolist()
+        all_gigi = np.hstack(np.array(all_gigi))
+        all_gigi_plot = np.hstack(np.array(all_gigi_plot))
         element = Counter(all_gigi).keys() 
         frequency = Counter(all_gigi).values()
-
-        print(element)
-        print(frequency)
+        element_plot = Counter(all_gigi_plot).keys() 
+        frequency_plot = Counter(all_gigi_plot).values()
 
         element = list(element)
         frequency = list(np.array(list(frequency)) - 1)
-        
         print(element)
         print(frequency)
 
@@ -271,13 +272,13 @@ class StatisticsView(APIView):
         figure = io.BytesIO()
         
         fig1, ax1 = plt.subplots()
-        ax1.pie(frequency, labels=element, autopct='%1.1f%%')
+        ax1.pie(frequency_plot, labels=element_plot, autopct='%1.1f%%')
         ax1.axis('equal')
         plt.tight_layout()
         plt.savefig(figure, format="png")
 
         content_file = ImageFile(figure)
-        result = frequency + [0,0,0]
+        result = frequency
         stats = Statistics(tipe="kondisi", result=result)
         dt = datetime.now()
         stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
