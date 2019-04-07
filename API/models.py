@@ -4,6 +4,7 @@ from django.db import models
 class User(AbstractUser):
     is_pasien = models.BooleanField(default=False)
     is_dokter = models.BooleanField(default=False)
+    is_manajer = models.BooleanField(default=False)
 
 class Pasien(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
@@ -33,7 +34,7 @@ class Manajer(models.Model):
     GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
     jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
     alamat = models.CharField(max_length=255, null=False)
-    tanggalLahir = models.DateField
+    tanggalLahir = models.DateField(null=False)
 
 class FAQ(models.Model):
     question = models.CharField(max_length=255, null=False)

@@ -30,6 +30,31 @@ class DokterLoginSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
         return data
 
+class ManajerLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        username = data.get("username", "")
+        password = data.get("password", "")
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+            print(user)
+            if user:
+                if (user.is_manajer):
+                    data["user"] = user
+                else:
+                    msg = "You are not authenticated"
+                    raise exceptions.PermissionDenied(msg)
+            else:
+                msg = "Unable to login with given credentials"
+                raise exceptions.ValidationError(msg)
+        else:
+            msg = "Must provide username and password"
+            raise exceptions.ValidationError(msg)
+        return data
+
 class PasienLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
@@ -94,7 +119,6 @@ class PasienPostSerializer(serializers.Serializer):
     jenisKelamin= serializers.CharField(required=True)
     alamat= serializers.CharField(required=False)
     tanggalLahir= serializers.DateField(required=False)
-
     def validate(self, data):
         username = data.get("username", "")
         password = data.get("password", "")
@@ -180,6 +204,89 @@ class PasienPatchSerializer(serializers.Serializer):
 #         user = pasien.user 
 #         pasien.delete()
 #         return "success"   
+
+class ManajerPostSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+    email = serializers.EmailField()
+    no_hp= serializers.CharField()
+    ktp= serializers.CharField()
+    nama= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
+    def validate(self, data):
+        username = data.get("username", "")
+        password = data.get("password", "")
+        email = data.get("email", "")
+        nama = data.get("nama","")
+        ktp = data.get("ktp", "")
+        no_hp= data.get("no_hp", "")
+        jenisKelamin = data.get("jenisKelamin","")
+        alamat = data.get("alamat","")
+        tanggalLahir = data.get("tanggalLahir", "")
+        if username and password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir :
+                try:
+                    user = User.objects.create_user(username=username,password=password,email=email,is_manajer=True)
+                    manajer = Manajer(user=user, nama=nama, ktp=ktp, jenisKelamin=jenisKelamin, alamat=alamat, tanggalLahir=tanggalLahir, no_hp=no_hp)
+                    manajer.save()
+                except:
+                    msg = "Email or username not unique"
+                    raise exceptions.ValidationError(msg)
+                data["user"] = user
+        else:
+            msg = "Must provide all of the data"
+            raise exceptions.ValidationError(msg)
+        return data
+    
+class ManajerGetSerializer(serializers.Serializer):
+    user = UserSerializer(read_only=True)
+    no_hp= serializers.CharField()
+    nama= serializers.CharField()
+    ktp= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
+
+class ManajerPatchSerializer(serializers.Serializer):
+    user = UserSerializer(read_only=True)
+    no_hp= serializers.CharField()
+    nama= serializers.CharField()
+    ktp= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
+    def validate(self, data):
+        password = self.context.get("password")
+        email = self.context.get("email")
+        nama = data.get("nama","")
+        ktp = data.get("ktp", "")
+        no_hp= data.get("no_hp", "")
+        jenisKelamin = data.get("jenisKelamin","")
+        alamat = data.get("alamat","")
+        tanggalLahir = data.get("tanggalLahir", "")
+        manajer = self.instance
+        user = manajer.user
+        if password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir:
+            try:
+                user.password=password
+                user.email=email
+                user.save()
+                manajer.nama=nama
+                manajer.jenisKelamin=jenisKelamin
+                manajer.alamat=alamat
+                manajer.no_hp=no_hp
+                manajer.tanggalLahir=tanggalLahir
+                manajer.ktp=ktp
+                manajer.save()
+            except:
+                msg = "Email already used"
+                raise exceptions.ValidationError(msg)
+            data["user"] = user
+        else:
+            msg = "Must provide username, password, email, and no_hp"
+            raise exceptions.ValidationError(msg)
+        return data
 
 class DokterPostSerializer(serializers.Serializer):
     username = serializers.CharField()
