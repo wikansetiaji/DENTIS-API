@@ -13,7 +13,12 @@ from .permissions import *
 import requests
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+import numpy as np
+from collections import Counter
+from django.core.files.images import ImageFile
+import io
+from io import BytesIO
+import matplotlib.pyplot as plt
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -160,13 +165,6 @@ class NewsView(APIView):
         r = requests.get(url)
         return Response(json.loads(r.content))
 
-class ListStatisticsView(generics.ListAPIView):
-    """
-    Provides a get method handler.
-    """
-    queryset = Statistics.objects.all()
-    serializer_class = StatisticsSerializer
-
 class PemeriksaanAwalView(viewsets.ViewSet):
     def post(self, request):
         serializer = PemeriksaanAwalPostSerializer(data=request.data)
@@ -238,3 +236,52 @@ class OdontogramView(viewsets.ViewSet):
                 gigi.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class StatisticsView(APIView):
+    """
+    Provides a get method handler.
+    """
+    def get(self, request, format=None):
+        
+        # Get All Gigi
+        queryset = Gigi.objects.all()
+        serializer = GigiSerializer(queryset, many=True)
+
+        all_gigi = []
+        for gigi in serializer.data:
+            status_gigi = list(gigi.values())[1:]
+            print(status_gigi)
+            all_gigi.append(status_gigi)
+
+        all_gigi = np.array(all_gigi).flatten().tolist()
+        element = Counter(all_gigi).keys() 
+        frequency = Counter(all_gigi).values()
+
+        print(element)
+        print(frequency)
+
+        figure = io.BytesIO()
+        plt.plot(list(element), list(frequency))
+        
+        # # Pie chart
+        # labels = ['Frogs', 'Hogs', 'Dogs', 'Logs']
+        # sizes = [15, 30, 45, 10]
+        # # only "explode" the 2nd slice (i.e. 'Hogs')
+        # explode = (0, 0.1, 0, 0)
+        # #add colors
+        # colors = ['#ff9999','#66b3ff','#99ff99','#ffcc99']
+        # fig1, ax1 = plt.subplots()
+        # ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
+        #         shadow=True, startangle=90)
+        # # Equal aspect ratio ensures that pie is drawn as a circle
+        # ax1.axis('equal')
+        # plt.tight_layout()
+        # plt.show()
+        
+        plt.savefig(figure, format="png")
+        content_file = ImageFile(figure)
+        stats = Statistics(tipe="Kondisi")
+        stats.image.save("Kondisi.png", content_file)
+        stats.save()
+
+        return Response(json.dumps(all_gigi))
