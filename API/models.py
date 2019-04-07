@@ -21,6 +21,7 @@ class FAQ(models.Model):
 class Statistics(models.Model):
     image = models.ImageField(upload_to='charts/%Y/%m/%d', null=True)
     tipe = models.CharField(max_length=255, null=False)
+    result = models.CharField(max_length=255, null=False)
 
 class RekamMedis(models.Model):
     anamnesa = models.CharField(max_length=255, null=False)
