@@ -369,3 +369,6 @@ class OHISSerializer(serializers.Serializer):
     kondisi = serializers.ListField(
         child=KondisiSerializer()
     )
+
+class RekamMedisSerializer(serializers.Serializer):
+    created_at = serializers.DateTimeField()

@@ -19,7 +19,9 @@ from django.core.files.images import ImageFile
 import io
 from io import BytesIO
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, date
+import calendar
+from dateutil import tz
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -283,7 +285,54 @@ class StatisticsView(APIView):
     """
     def get(self, request, format=None):
         
-        # Get All Gigi
+        ## Statistik Pengunjung
+        today = date.today()
+        queryset = RekamMedis.objects.filter(created_at__month=today.month)
+        serializer = RekamMedisSerializer(queryset, many=True)
+        jumlah_pengunjung_total = len(queryset)
+
+        days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+        for record in serializer.data:
+            date_str = list(record.values())[0]
+            split = list(date_str)
+            split.remove('Z')
+            split.insert(11, ' ')
+            split.remove('T')
+            date_str = ''.join(split)
+
+            from_zone = tz.tzutc()
+            to_zone = tz.tzlocal()
+
+            utc = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f')
+            utc = utc.replace(tzinfo=from_zone)
+            central = utc.astimezone(to_zone)
+            
+            ## Monday 0, Sunday 6
+            day_name = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+            days.append(day_name[central.weekday()])
+            
+        element = Counter(days).keys() 
+        frequency = Counter(days).values()
+        element = list(element)
+        frequency = list(np.array(list(frequency)) - 1)
+        index = np.arange(len(element))
+        
+        figure = io.BytesIO()
+        plt.bar(index, frequency)
+        plt.xlabel('Hari', fontsize=10)
+        plt.ylabel('Jumlah Pengunjung', fontsize=10)
+        plt.xticks(index, element, fontsize=10, rotation=30)
+        plt.savefig(figure, format="png")
+        
+        content_file = ImageFile(figure)
+        result = frequency
+        stats = Statistics(tipe="pengunjung", result=result)
+        dt = datetime.now()
+        stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
+        stats.save()
+        plt.clf()
+
+        ## Statistik Kondisi
         queryset = Gigi.objects.all()
         serializer = GigiSerializer(queryset, many=True)
 
@@ -291,7 +340,6 @@ class StatisticsView(APIView):
         all_gigi_plot = []
         for gigi in serializer.data:
             status_gigi = list(gigi.values())[1:]
-            print(status_gigi)
             all_gigi.append(status_gigi)
             all_gigi_plot.append(status_gigi)
 
@@ -304,23 +352,27 @@ class StatisticsView(APIView):
 
         element = list(element)
         frequency = list(np.array(list(frequency)) - 1)
-        print(element)
-        print(frequency)
 
-        ## Pie Plot Kondisi
         figure = io.BytesIO()
         
         fig1, ax1 = plt.subplots()
-        ax1.pie(frequency_plot, labels=element_plot, autopct='%1.1f%%')
+        colors = ['#5BBAE6', '#B6DA54', '#FAC464', '#8CD3FD', '#D898CC',\
+        '#F1D24A', '#93B9C4', '#CCC5A8', '#51BACE', '#DBDB47', '#99ABF3']
+        ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
         ax1.axis('equal')
         plt.tight_layout()
         plt.savefig(figure, format="png")
-
+        
         content_file = ImageFile(figure)
         result = frequency
         stats = Statistics(tipe="kondisi", result=result)
         dt = datetime.now()
         stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
         stats.save()
+        plt.clf()
 
-        return Response(stats.image.url)
+        ## Statistik O-His
+
+
+
+        return Response("Success")
