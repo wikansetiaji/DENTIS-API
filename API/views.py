@@ -324,100 +324,143 @@ class OHISView(viewsets.ViewSet):
             ohis.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class StatisticsView(APIView):
-    """
-    Provides a get method handler.
-    """
-    def get(self, request, format=None):
-        
-        ## Statistik Pengunjung
-        today = date.today()
-        queryset = RekamMedis.objects.filter(created_at__month=today.month)
-        serializer = RekamMedisSerializer(queryset, many=True)
-        jumlah_pengunjung_total = len(queryset)
+    def get(self, request, tipe, format=None):
+        if tipe == 'pengunjung':
+            ## Statistik Pengunjung
+            today = date.today()
+            queryset = RekamMedis.objects.filter(created_at__month=today.month)
+            serializer = RekamMedisSerializer(queryset, many=True)
+            jumlah_pengunjung_total = len(queryset)
 
-        days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
-        for record in serializer.data:
-            date_str = list(record.values())[0]
-            split = list(date_str)
-            split.remove('Z')
-            split.insert(11, ' ')
-            split.remove('T')
-            date_str = ''.join(split)
+            days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+            for record in serializer.data:
+                date_str = list(record.values())[0]
+                split = list(date_str)
+                split.remove('Z')
+                split.insert(11, ' ')
+                split.remove('T')
+                date_str = ''.join(split)
 
-            from_zone = tz.tzutc()
-            to_zone = tz.tzlocal()
+                from_zone = tz.tzutc()
+                to_zone = tz.tzlocal()
 
-            utc = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f')
-            utc = utc.replace(tzinfo=from_zone)
-            central = utc.astimezone(to_zone)
+                utc = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f')
+                utc = utc.replace(tzinfo=from_zone)
+                central = utc.astimezone(to_zone)
+                
+                ## Monday 0, Sunday 6
+                day_name = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+                days.append(day_name[central.weekday()])
+                
+            element = Counter(days).keys() 
+            frequency = Counter(days).values()
+            element = list(element)
+            frequency = list(np.array(list(frequency)) - 1)
+            index = np.arange(len(element))
             
-            ## Monday 0, Sunday 6
-            day_name = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
-            days.append(day_name[central.weekday()])
+            figure = io.BytesIO()
+            plt.bar(index, frequency, color=(0.1, 0.1, 0.1, 0.1),  edgecolor='blue')
+            plt.xlabel('Hari', fontsize=10)
+            plt.ylabel('Jumlah Pengunjung', fontsize=10)
+            plt.xticks(index, element, fontsize=10, rotation=30)
+            plt.savefig(figure, format="png")
             
-        element = Counter(days).keys() 
-        frequency = Counter(days).values()
-        element = list(element)
-        frequency = list(np.array(list(frequency)) - 1)
-        index = np.arange(len(element))
-        
-        figure = io.BytesIO()
-        plt.bar(index, frequency)
-        plt.xlabel('Hari', fontsize=10)
-        plt.ylabel('Jumlah Pengunjung', fontsize=10)
-        plt.xticks(index, element, fontsize=10, rotation=30)
-        plt.savefig(figure, format="png")
-        
-        content_file = ImageFile(figure)
-        result = frequency
-        stats = Statistics(tipe="pengunjung", result=result)
-        dt = datetime.now()
-        stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
-        stats.save()
-        plt.clf()
+            content_file = ImageFile(figure)
+            result = frequency
+            stats = Statistics(tipe="pengunjung", result=result)
+            dt = datetime.now()
+            stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.save()
+            plt.clf()
+            
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        ## Statistik Kondisi
-        queryset = Gigi.objects.all()
-        serializer = GigiSerializer(queryset, many=True)
+        elif tipe == 'kondisi':
+            ## Statistik Kondisi
+            queryset = Gigi.objects.all()
+            serializer = GigiSerializer(queryset, many=True)
 
-        all_gigi = [[x for x in range(-1, 11)]]
-        all_gigi_plot = []
-        for gigi in serializer.data:
-            status_gigi = list(gigi.values())[1:]
-            all_gigi.append(status_gigi)
-            all_gigi_plot.append(status_gigi)
+            all_gigi = [[x for x in range(-1, 11)]]
+            all_gigi_plot = []
+            for gigi in serializer.data:
+                status_gigi = list(gigi.values())[1:]
+                all_gigi.append(status_gigi)
+                all_gigi_plot.append(status_gigi)
 
-        all_gigi = np.hstack(np.array(all_gigi))
-        all_gigi_plot = np.hstack(np.array(all_gigi_plot))
-        element = Counter(all_gigi).keys() 
-        frequency = Counter(all_gigi).values()
-        element_plot = Counter(all_gigi_plot).keys() 
-        frequency_plot = Counter(all_gigi_plot).values()
+            all_gigi = np.hstack(np.array(all_gigi))
+            all_gigi_plot = np.hstack(np.array(all_gigi_plot))
+            element = Counter(all_gigi).keys() 
+            frequency = Counter(all_gigi).values()
+            element_plot = Counter(all_gigi_plot).keys() 
+            frequency_plot = Counter(all_gigi_plot).values()
 
-        element = list(element)
-        frequency = list(np.array(list(frequency)) - 1)
+            element = list(element)
+            frequency = list(np.array(list(frequency)) - 1)
 
-        figure = io.BytesIO()
-        
-        fig1, ax1 = plt.subplots()
-        colors = ['#5BBAE6', '#B6DA54', '#FAC464', '#8CD3FD', '#D898CC',\
-        '#F1D24A', '#93B9C4', '#CCC5A8', '#51BACE', '#DBDB47', '#99ABF3']
-        ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
-        ax1.axis('equal')
-        plt.tight_layout()
-        plt.savefig(figure, format="png")
-        
-        content_file = ImageFile(figure)
-        result = frequency
-        stats = Statistics(tipe="kondisi", result=result)
-        dt = datetime.now()
-        stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
-        stats.save()
-        plt.clf()
+            figure = io.BytesIO()
+            
+            fig1, ax1 = plt.subplots()
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
+            ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
+            ax1.axis('equal')
+            plt.tight_layout()
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            result = frequency
+            stats = Statistics(tipe="kondisi", result=result)
+            dt = datetime.now()
+            stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.save()
+            plt.clf()
 
-        ## Statistik O-His
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
+        elif tipe == 'ohis':
+            ## Statistik O-His
+            queryset = OHIS.objects.all()
+            serializer = OHISGetSerializer(queryset, many=True)
 
+            all_kondisi = ["Baik", "Sedang", "Buruk"]
+            all_kondisi_plot = []
+            for ohis in serializer.data:
+                kondisi = list(ohis.values())[0]
+                all_kondisi.append(kondisi)
+                all_kondisi_plot.append(kondisi)
 
-        return Response("Success")
+            element = Counter(all_kondisi).keys() 
+            frequency = Counter(all_kondisi).values()
+            element_plot = Counter(all_kondisi_plot).keys() 
+            frequency_plot = Counter(all_kondisi_plot).values()
+
+            element = list(element)
+            frequency = list(np.array(list(frequency)) - 1)
+            print(element)
+            figure = io.BytesIO()
+            
+            fig1, ax1 = plt.subplots()
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
+            ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
+            ax1.axis('equal')
+            plt.tight_layout()
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            result = frequency
+            stats = Statistics(tipe="ohis", result=result)
+            dt = datetime.now()
+            stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.save()
+            plt.clf()
+
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            return Response("Error", status=status.HTTP_400_BAD_REQUEST)
