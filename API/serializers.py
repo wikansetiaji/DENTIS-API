@@ -294,3 +294,14 @@ class OdontogramPostSerializer(serializers.Serializer):
     gigi = serializers.ListField(
         child=GigiSerializer()
     )
+
+class KondisiSerializer(serializers.Serializer):
+    kode = serializers.CharField()
+    di = serializers.IntegerField()
+    ci = serializers.IntegerField()
+
+class OHISSerializer(serializers.Serializer):
+    idRekamMedis = serializers.CharField()
+    kondisi = serializers.ListField(
+        child=KondisiSerializer()
+    )

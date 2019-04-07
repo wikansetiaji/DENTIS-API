@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^admin-login/',views.AdminLoginView.as_view({'post':'post'})),
     url(r'^pemeriksaanAwal/',views.PemeriksaanAwalView.as_view({'post':'post'})),
     url(r'^odontogram/',views.OdontogramView.as_view({'post':'post'})),
+    url(r'^ohis/',views.OHISView.as_view({'post':'post'})),
     path('pasien/', views.PasiensView.as_view()),
     path('pasien/<int:id>/', views.PasienDetailView.as_view()),
     path('dokter/', views.DoktersView.as_view()),
