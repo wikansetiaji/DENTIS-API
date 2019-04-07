@@ -6,13 +6,34 @@ class User(AbstractUser):
     is_dokter = models.BooleanField(default=False)
 
 class Pasien(models.Model):
-    name =  models.CharField(max_length=255, null=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    no_hp = models.CharField(max_length=255, null=False)
+    nama = models.CharField(max_length=255, null=False)
+    no_hp = models.CharField(max_length=255, null=True)
+    GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
+    jenisKelamin = models.CharField(max_length=1, choices=GenderChoice, null=False)
+    alamat = models.CharField(max_length=255, null=True)
+    tanggalLahir = models.DateField(null=True)
 
 class Dokter(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    nip = models.CharField(max_length=255, null=False)
+    nama = models.CharField(max_length=255, null=False)   
+    ktp = models.CharField(max_length=255, null=False)
+    strDokter = models.CharField(max_length=255, null=False)
+    GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
+    jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
+    alamat = models.CharField(max_length=255, null=False)   
+    tanggalLahir = models.DateField(null=False) 
+    no_hp = models.CharField(max_length=255, null=False)
+
+class Manajer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    nama = models.CharField(max_length=255, null=False)   
+    ktp = models.CharField(max_length=255, null=False)
+    no_hp = models.CharField(max_length=255, null=False)
+    GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
+    jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
+    alamat = models.CharField(max_length=255, null=False)
+    tanggalLahir = models.DateField
 
 class FAQ(models.Model):
     question = models.CharField(max_length=255, null=False)
