@@ -86,6 +86,12 @@ class PasienDetailView(APIView):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        pasien = self.get_object(id)
+        if pasien.user != None :
+            pasien.user.delete()
+        #serializer = PasienDeleteSerializer(pasien)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class DoktersView(APIView):
     permission_classes = (IsAdmin,IsAuthenticated,)
@@ -118,6 +124,13 @@ class DokterDetailView(APIView):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        dokter = self.get_object(id)
+        if dokter.user != None :
+            dokter.user.delete()
+        #serializer = PasienDeleteSerializer(pasien)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class FAQsView(APIView):
     def get_permissions(self):

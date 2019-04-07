@@ -172,6 +172,14 @@ class PasienPatchSerializer(serializers.Serializer):
             msg = "Must provide username, password, email, and no_hp"
             raise exceptions.ValidationError(msg)
         return data
+    
+# class PasienDeleteSerializer(serializers.Serializer):
+#     user = UserSerializer(read_only=True)
+#     def delete(self,data) :
+#         pasien = self.instance
+#         user = pasien.user 
+#         pasien.delete()
+#         return "success"   
 
 class DokterPostSerializer(serializers.Serializer):
     username = serializers.CharField()
