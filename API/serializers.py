@@ -140,21 +140,32 @@ class PasienGetSerializer(serializers.Serializer):
 class PasienPatchSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
     no_hp= serializers.CharField()
+    nama= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
     def validate(self, data):
         password = self.context.get("password")
         email = self.context.get("email")
+        nama = data.get("nama","")
         no_hp= data.get("no_hp", "")
+        jenisKelamin = data.get("jenisKelamin","")
+        alamat = data.get("alamat","")
+        tanggalLahir = data.get("tanggalLahir", "")
         pasien = self.instance
         user = pasien.user
-        if password and email and no_hp:
+        if password and email and nama and jenisKelamin and alamat and tanggalLahir:
             try:
                 user.password=password
                 user.email=email
                 user.save()
-                pasien.no_hp=no_hp
+                pasien.nama=nama
+                pasien.jenisKelamin=jenisKelamin
+                pasien.alamat=alamat
+                pasien.tanggalLahir=tanggalLahir
                 pasien.save()
             except:
-                msg = "Email alleady used"
+                msg = "Email already used"
                 raise exceptions.ValidationError(msg)
             data["user"] = user
         else:
@@ -211,26 +222,44 @@ class DokterGetSerializer(serializers.Serializer):
 
 class DokterPatchSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
-    nip= serializers.CharField()
+    no_hp= serializers.CharField()
+    nama= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
+    strDokter= serializers.CharField()
+    ktp= serializers.CharField()
     def validate(self, data):
         password = self.context.get("password")
         email = self.context.get("email")
-        nip= data.get("nip", "")
+        nama= data.get("nama", "")
+        ktp = data.get("ktp", "")
+        no_hp = data.get("no_hp", "")
+        jenisKelamin = data.get("jenisKelamin", "")
+        alamat = data.get("alamat", "")
+        tanggalLahir = data.get("tanggalLahir", "")
+        strDokter = data.get("strDokter", "")
         dokter = self.instance
         user = dokter.user
-        if password and email and nip:
+        if password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir and strDokter:
             try:
                 user.password=password
                 user.email=email
                 user.save()
-                dokter.nip=nip
+                dokter.nama=nama
+                dokter.ktp=ktp
+                dokter.no_hp=no_hp
+                dokter.jenisKelamin=jenisKelamin
+                dokter.alamat=alamat
+                dokter.tanggalLahir=tanggalLahir
+                dokter.strDokter=strDokter
                 dokter.save()
             except:
-                msg = "Email alleady used"
+                msg = "Email already used"
                 raise exceptions.ValidationError(msg)
             data["user"] = user
         else:
-            msg = "Must provide username, password, email, and nip"
+            msg = "Must provide all of the data"
             raise exceptions.ValidationError(msg)
         return data
 
@@ -278,6 +307,11 @@ class FAQPatchSerializer(serializers.Serializer):
             msg = "Must provide question and answer"
             raise exceptions.ValidationError(msg)
         return data
+
+class StatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Statistics
+        fields = ("image_base64", "stats_type")
 
 class PemeriksaanAwalPostSerializer(serializers.Serializer):
     anamnesa = serializers.CharField()
