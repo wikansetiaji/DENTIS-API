@@ -42,8 +42,10 @@ class FAQ(models.Model):
 class Statistics(models.Model):
     image = models.ImageField(upload_to='charts/%Y/%m/%d', null=True)
     tipe = models.CharField(max_length=255, null=False)
+    result = models.CharField(max_length=255, null=False)
 
 class RekamMedis(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
     anamnesa = models.CharField(max_length=255, null=False)
     alergi = models.CharField(max_length=255, null=True)
     riwayat_penyakit = models.CharField(max_length=255, null=True)
@@ -61,3 +63,7 @@ class Gigi(models.Model):
     o = models.IntegerField(null=True)
     m = models.IntegerField(null=False)
     v = models.IntegerField(null=False)
+
+class OHIS(models.Model):
+    rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)
+    kondisi = models.CharField(max_length=2, null=False)

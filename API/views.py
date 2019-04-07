@@ -19,6 +19,7 @@ from django.core.files.images import ImageFile
 import io
 from io import BytesIO
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -237,6 +238,32 @@ class OdontogramView(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class OHISView(viewsets.ViewSet):
+    def post(self, request):
+        serializer = OHISSerializer(data=request.data)
+        if serializer.is_valid():
+            total = 0
+            ci=0
+            di=0
+            for i in serializer.data["kondisi"]:
+                ci+=i["ci"]
+                di+=i["di"]
+            total = (ci+di)/6
+            print(total)
+            kondisi = ""
+            if (total<1.2):
+                kondisi = "Baik"
+            elif (total<3.0):
+                kondisi = "Sedang"
+            else:
+                kondisi = "Buruk"
+            ohis = OHIS(
+                kondisi=kondisi,
+                rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"])
+            )
+            ohis.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class StatisticsView(APIView):
     """
     Provides a get method handler.
@@ -247,41 +274,40 @@ class StatisticsView(APIView):
         queryset = Gigi.objects.all()
         serializer = GigiSerializer(queryset, many=True)
 
-        all_gigi = []
+        all_gigi = [[x for x in range(-1, 11)]]
+        all_gigi_plot = []
         for gigi in serializer.data:
             status_gigi = list(gigi.values())[1:]
             print(status_gigi)
             all_gigi.append(status_gigi)
+            all_gigi_plot.append(status_gigi)
 
-        all_gigi = np.array(all_gigi).flatten().tolist()
+        all_gigi = np.hstack(np.array(all_gigi))
+        all_gigi_plot = np.hstack(np.array(all_gigi_plot))
         element = Counter(all_gigi).keys() 
         frequency = Counter(all_gigi).values()
+        element_plot = Counter(all_gigi_plot).keys() 
+        frequency_plot = Counter(all_gigi_plot).values()
 
+        element = list(element)
+        frequency = list(np.array(list(frequency)) - 1)
         print(element)
         print(frequency)
 
+        ## Pie Plot Kondisi
         figure = io.BytesIO()
-        plt.plot(list(element), list(frequency))
         
-        # # Pie chart
-        # labels = ['Frogs', 'Hogs', 'Dogs', 'Logs']
-        # sizes = [15, 30, 45, 10]
-        # # only "explode" the 2nd slice (i.e. 'Hogs')
-        # explode = (0, 0.1, 0, 0)
-        # #add colors
-        # colors = ['#ff9999','#66b3ff','#99ff99','#ffcc99']
-        # fig1, ax1 = plt.subplots()
-        # ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
-        #         shadow=True, startangle=90)
-        # # Equal aspect ratio ensures that pie is drawn as a circle
-        # ax1.axis('equal')
-        # plt.tight_layout()
-        # plt.show()
-        
+        fig1, ax1 = plt.subplots()
+        ax1.pie(frequency_plot, labels=element_plot, autopct='%1.1f%%')
+        ax1.axis('equal')
+        plt.tight_layout()
         plt.savefig(figure, format="png")
+
         content_file = ImageFile(figure)
-        stats = Statistics(tipe="Kondisi")
-        stats.image.save("Kondisi.png", content_file)
+        result = frequency
+        stats = Statistics(tipe="kondisi", result=result)
+        dt = datetime.now()
+        stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
         stats.save()
 
-        return Response(json.dumps(all_gigi))
+        return Response(stats.image.url)
