@@ -6,23 +6,43 @@ class User(AbstractUser):
     is_dokter = models.BooleanField(default=False)
 
 class Pasien(models.Model):
-    name =  models.CharField(max_length=255, null=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    no_hp = models.CharField(max_length=255, null=False)
+    nama = models.CharField(max_length=255, null=False)
+    no_hp = models.CharField(max_length=255, null=True)
+    GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
+    jenisKelamin = models.CharField(max_length=1, choices=GenderChoice, null=False)
+    alamat = models.CharField(max_length=255, null=True)
+    tanggalLahir = models.DateField(null=True)
 
 class Dokter(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    nip = models.CharField(max_length=255, null=False)
+    nama = models.CharField(max_length=255, null=False)   
+    ktp = models.CharField(max_length=255, null=False)
+    strDokter = models.CharField(max_length=255, null=False)
+    GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
+    jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
+    alamat = models.CharField(max_length=255, null=False)   
+    tanggalLahir = models.DateField(null=False) 
+    no_hp = models.CharField(max_length=255, null=False)
+
+class Manajer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    nama = models.CharField(max_length=255, null=False)   
+    ktp = models.CharField(max_length=255, null=False)
+    no_hp = models.CharField(max_length=255, null=False)
+    GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
+    jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
+    alamat = models.CharField(max_length=255, null=False)
+    tanggalLahir = models.DateField
 
 class FAQ(models.Model):
     question = models.CharField(max_length=255, null=False)
     answer = models.CharField(max_length=255, null=False)
 
 class Statistics(models.Model):
-    image_base64 = models.CharField(max_length=255, null=False)
-    stats_type = models.CharField(max_length=255, null=False)
-    def __str__(self):
-        return "{} - {}".format(self.image_base64, self.stats_type)
+    image = models.ImageField(upload_to='charts/%Y/%m/%d', null=True)
+    tipe = models.CharField(max_length=255, null=False)
+    result = models.CharField(max_length=255, null=False)
 
 class RekamMedis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)

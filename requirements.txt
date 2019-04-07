@@ -1,5 +1,8 @@
-Django
+django
 djangorestframework
 requests
 gunicorn
 django-heroku
+matplotlib
+numpy
+Pillow

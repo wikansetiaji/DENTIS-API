@@ -13,7 +13,13 @@ from .permissions import *
 import requests
 import json
 from django.views.decorators.csrf import csrf_exempt
-
+import numpy as np
+from collections import Counter
+from django.core.files.images import ImageFile
+import io
+from io import BytesIO
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -160,13 +166,6 @@ class NewsView(APIView):
         r = requests.get(url)
         return Response(json.loads(r.content))
 
-class ListStatisticsView(generics.ListAPIView):
-    """
-    Provides a get method handler.
-    """
-    queryset = Statistics.objects.all()
-    serializer_class = StatisticsSerializer
-
 class PemeriksaanAwalView(viewsets.ViewSet):
     def post(self, request):
         serializer = PemeriksaanAwalPostSerializer(data=request.data)
@@ -265,3 +264,49 @@ class OHISView(viewsets.ViewSet):
             ohis.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class StatisticsView(APIView):
+    """
+    Provides a get method handler.
+    """
+    def get(self, request, format=None):
+        
+        # Get All Gigi
+        queryset = Gigi.objects.all()
+        serializer = GigiSerializer(queryset, many=True)
+
+        all_gigi = [x for x in range(-1, 12)]
+        for gigi in serializer.data:
+            status_gigi = list(gigi.values())[1:]
+            print(status_gigi)
+            all_gigi.append(status_gigi)
+
+        all_gigi = np.array(all_gigi).flatten().tolist()
+        element = Counter(all_gigi).keys() 
+        frequency = Counter(all_gigi).values()
+
+        print(element)
+        print(frequency)
+
+        element = list(element)
+        frequency = list(np.array(list(frequency)) - 1)
+        
+        print(element)
+        print(frequency)
+
+        ## Pie Plot Kondisi
+        figure = io.BytesIO()
+        
+        fig1, ax1 = plt.subplots()
+        ax1.pie(frequency, labels=element, autopct='%1.1f%%')
+        ax1.axis('equal')
+        plt.tight_layout()
+        plt.savefig(figure, format="png")
+
+        content_file = ImageFile(figure)
+        result = frequency + [0,0,0]
+        stats = Statistics(tipe="kondisi", result=result)
+        dt = datetime.now()
+        stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+        stats.save()
+
+        return Response(stats.image.url)

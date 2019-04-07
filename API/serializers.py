@@ -89,20 +89,27 @@ class PasienPostSerializer(serializers.Serializer):
     username = serializers.CharField(required=False)
     password = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
-    no_hp= serializers.CharField()
-    name= serializers.CharField()
+    no_hp= serializers.CharField(required=False)
+    nama= serializers.CharField(required=True)
+    jenisKelamin= serializers.CharField(required=True)
+    alamat= serializers.CharField(required=False)
+    tanggalLahir= serializers.DateField(required=False)
 
     def validate(self, data):
-        name = data.get("name", "")
         username = data.get("username", "")
         password = data.get("password", "")
         email = data.get("email", "")
+        nama = data.get("nama","")
         no_hp= data.get("no_hp", "")
-        if no_hp and name:
+        jenisKelamin = data.get("jenisKelamin","")
+        alamat = data.get("alamat","")
+        tanggalLahir = data.get("tanggalLahir", "")
+
+        if nama and jenisKelamin:
             if username and password and email: 
                 try:
                     user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)
-                    pasien = Pasien(user=user, no_hp=no_hp, name=name)
+                    pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat,tanggalLahir=tanggalLahir)
                     pasien.save()
                 except:
                     msg = "Email or username not unique"
@@ -110,7 +117,8 @@ class PasienPostSerializer(serializers.Serializer):
                 data["user"] = user
             else:
                 try:
-                    pasien = Pasien(no_hp=no_hp, name=name)
+                    user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)                   
+                    pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat,tanggalLahir=tanggalLahir)
                     pasien.save()
                 except():
                     msg = "Error creating pasien"
@@ -124,8 +132,10 @@ class PasienPostSerializer(serializers.Serializer):
 class PasienGetSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
     no_hp= serializers.CharField()
-    name= serializers.CharField()
-
+    nama= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
 
 class PasienPatchSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
@@ -156,30 +166,47 @@ class DokterPostSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
     email = serializers.EmailField()
-    nip= serializers.CharField()
-
+    nama = serializers.CharField()
+    ktp = serializers.CharField()
+    strDokter = serializers.CharField()
+    jenisKelamin = serializers.CharField()
+    alamat = serializers.CharField()
+    tanggalLahir = serializers.DateField()
+    no_hp = serializers.CharField()
     def validate(self, data):
         username = data.get("username", "")
         password = data.get("password", "")
         email = data.get("email", "")
-        nip= data.get("nip", "")
-        if username and password and email and nip:
+        nama= data.get("nama", "")
+        ktp = data.get("ktp", "")
+        no_hp = data.get("no_hp", "")
+        jenisKelamin = data.get("jenisKelamin", "")
+        alamat = data.get("alamat", "")
+        tanggalLahir = data.get("tanggalLahir", "")
+        strDokter = data.get("strDokter", "")
+        if username and password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir and strDokter:
             try:
                 user = User.objects.create_user(username=username,password=password,email=email,is_dokter=True)
-                dokter = Dokter(user=user, nip=nip)
+                dokter = Dokter(user=user, nama=nama, ktp=ktp, strDokter=strDokter, jenisKelamin=jenisKelamin, alamat=alamat, tanggalLahir=tanggalLahir, no_hp=no_hp)
                 dokter.save()
             except:
                 msg = "Email or username not unique"
                 raise exceptions.ValidationError(msg)
             data["user"] = user
         else:
-            msg = "Must provide username, password, email, and nip"
+            msg = "Must provide all of the data"
             raise exceptions.ValidationError(msg)
         return data
     
 class DokterGetSerializer(serializers.Serializer):
     user = UserSerializer(read_only=True)
-    nip= serializers.CharField()
+    no_hp= serializers.CharField()
+    nama= serializers.CharField()
+    jenisKelamin= serializers.CharField()
+    alamat= serializers.CharField()
+    tanggalLahir= serializers.DateField()
+    strDokter= serializers.CharField()
+    ktp= serializers.CharField()
 
 
 class DokterPatchSerializer(serializers.Serializer):
@@ -251,11 +278,6 @@ class FAQPatchSerializer(serializers.Serializer):
             msg = "Must provide question and answer"
             raise exceptions.ValidationError(msg)
         return data
-
-class StatisticsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Statistics
-        fields = ("image_base64", "stats_type")
 
 class PemeriksaanAwalPostSerializer(serializers.Serializer):
     anamnesa = serializers.CharField()
