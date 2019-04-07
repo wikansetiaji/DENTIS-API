@@ -6,3 +6,4 @@ django-heroku
 matplotlib
 numpy
 Pillow
+dateutil
