@@ -238,6 +238,32 @@ class OdontogramView(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class OHISView(viewsets.ViewSet):
+    def post(self, request):
+        serializer = OHISSerializer(data=request.data)
+        if serializer.is_valid():
+            total = 0
+            ci=0
+            di=0
+            for i in serializer.data["kondisi"]:
+                ci+=i["ci"]
+                di+=i["di"]
+            total = (ci+di)/6
+            print(total)
+            kondisi = ""
+            if (total<1.2):
+                kondisi = "Baik"
+            elif (total<3.0):
+                kondisi = "Sedang"
+            else:
+                kondisi = "Buruk"
+            ohis = OHIS(
+                kondisi=kondisi,
+                rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"])
+            )
+            ohis.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class StatisticsView(APIView):
     """
     Provides a get method handler.
