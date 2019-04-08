@@ -21,6 +21,9 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 from datetime import datetime
 from rest_framework.parsers import FileUploadParser
+from datetime import datetime, date
+import calendar
+from dateutil import tz
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -35,6 +38,15 @@ class PasienLoginView(viewsets.ViewSet):
     def post(self, request):
         print(request.data)
         serializer = PasienLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        django_login(request, user)
+        return Response({"id": user.id}, status=200)
+
+class ManajerLoginView(viewsets.ViewSet):
+    def post(self, request):
+        print(request.data)
+        serializer = ManajerLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         django_login(request, user)
@@ -69,10 +81,10 @@ class PasiensView(APIView):
         return Response(serializer.data)
 
 class PasienDetailView(APIView):
-    permission_classes = (IsAdminOrOwner,IsAuthenticated,)
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
     def get_object(self, id):
         try:
-            return Pasien.objects.get(user_id=id)
+            return Pasien.objects.get(id=id)
         except Pasien.DoesNotExist:
             raise Http404
     def get(self, request, id, format=None):
@@ -85,14 +97,18 @@ class PasienDetailView(APIView):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        pasien = self.get_object(id)
+        if pasien.user != None :
+            pasien.user.delete()
+        #serializer = PasienDeleteSerializer(pasien)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class DoktersView(APIView):
-    permission_classes = (IsAdmin,IsAuthenticated,)
+    permission_classes = (IsAdmin, IsAuthenticated,)
     def post(self, request, format=None):
         serializer = DokterPostSerializer(data=request.data) #validates and saves dokter
         if serializer.is_valid():
-            user = serializer.validated_data["user"]
-            django_login(request, user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def get(self, request, format=None):
@@ -101,7 +117,7 @@ class DoktersView(APIView):
         return Response(serializer.data)
 
 class DokterDetailView(APIView):
-    permission_classes = (IsAdminOrOwner,IsAuthenticated,)
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
     def get_object(self, id):
         try:
             return Dokter.objects.get(user_id=id)
@@ -117,6 +133,49 @@ class DokterDetailView(APIView):
         if serializer.is_valid():
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        dokter = self.get_object(id)
+        if dokter.user != None :
+            dokter.user.delete()
+        #serializer = PasienDeleteSerializer(pasien)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ManajerView(APIView):
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
+    def post(self, request, format=None):
+        serializer = ManajerPostSerializer(data=request.data) #validates and saves manajer
+        if serializer.is_valid():
+            #user = serializer.validated_data["user"]
+            #django_login(request, user)
+            return Response(serializer.validated_data["user"].id, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, format=None):
+        queryset = Manajer.objects.all()
+        serializer = ManajerGetSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class ManajerDetailView(APIView):
+    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
+    def get_object(self, id):
+        try:
+            return Manajer.objects.get(user_id=id)
+        except Manajer.DoesNotExist:
+            raise Http404
+    def get(self, request, id, format=None):
+        manajer = self.get_object(id)
+        serializer = ManajerGetSerializer(manajer)
+        return Response(serializer.data)
+    def patch(self, request, id, format=None):
+        manajer = self.get_object(id)
+        serializer = ManajerPatchSerializer(manajer, data=request.data,context={'email': request.data["email"], 'password':request.data["password"]})
+        if serializer.is_valid():   
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        manajer = self.get_object(id)
+        if manajer.user != None :
+            manajer.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class FAQsView(APIView):
     def get_permissions(self):
@@ -265,52 +324,146 @@ class OHISView(viewsets.ViewSet):
             ohis.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class StatisticsView(APIView):
-    """
-    Provides a get method handler.
-    """
-    def get(self, request, format=None):
-        
-        # Get All Gigi
-        queryset = Gigi.objects.all()
-        serializer = GigiSerializer(queryset, many=True)
+    def get(self, request, tipe, format=None):
+        if tipe == 'pengunjung':
+            ## Statistik Pengunjung
+            today = date.today()
+            queryset = RekamMedis.objects.filter(created_at__month=today.month)
+            serializer = RekamMedisSerializer(queryset, many=True)
+            jumlah_pengunjung_total = len(queryset)
 
-        all_gigi = [x for x in range(-1, 12)]
-        for gigi in serializer.data:
-            status_gigi = list(gigi.values())[1:]
-            print(status_gigi)
-            all_gigi.append(status_gigi)
+            days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+            for record in serializer.data:
+                date_str = list(record.values())[0]
+                split = list(date_str)
+                split.remove('Z')
+                split.insert(11, ' ')
+                split.remove('T')
+                date_str = ''.join(split)
 
-        all_gigi = np.array(all_gigi).flatten().tolist()
-        element = Counter(all_gigi).keys() 
-        frequency = Counter(all_gigi).values()
+                from_zone = tz.tzutc()
+                to_zone = tz.tzlocal()
 
-        print(element)
-        print(frequency)
+                utc = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S.%f')
+                utc = utc.replace(tzinfo=from_zone)
+                central = utc.astimezone(to_zone)
+                
+                ## Monday 0, Sunday 6
+                day_name = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+                days.append(day_name[central.weekday()])
+                
+            element = Counter(days).keys() 
+            frequency = Counter(days).values()
+            element = list(element)
+            frequency = list(np.array(list(frequency)) - 1)
+            index = np.arange(len(element))
+            
+            figure = io.BytesIO()
+            plt.bar(index, frequency, color=['#4878BC'])
+            plt.xlabel('Hari', fontsize=10)
+            plt.ylabel('Jumlah Pengunjung', fontsize=10)
+            plt.xticks(index, element, fontsize=10, rotation=30)
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            result = frequency
+            stats = Statistics(tipe="pengunjung", result=result)
+            dt = datetime.now()
+            stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.save()
+            plt.clf()
+            
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        element = list(element)
-        frequency = list(np.array(list(frequency)) - 1)
-        
-        print(element)
-        print(frequency)
+        elif tipe == 'kondisi':
+            ## Statistik Kondisi
+            queryset = Gigi.objects.all()
+            serializer = GigiSerializer(queryset, many=True)
 
-        ## Pie Plot Kondisi
-        figure = io.BytesIO()
-        
-        fig1, ax1 = plt.subplots()
-        ax1.pie(frequency, labels=element, autopct='%1.1f%%')
-        ax1.axis('equal')
-        plt.tight_layout()
-        plt.savefig(figure, format="png")
+            all_gigi = [[x for x in range(-1, 11)]]
+            all_gigi_plot = []
+            for gigi in serializer.data:
+                status_gigi = list(gigi.values())[1:]
+                all_gigi.append(status_gigi)
+                all_gigi_plot.append(status_gigi)
 
-        content_file = ImageFile(figure)
-        result = frequency + [0,0,0]
-        stats = Statistics(tipe="kondisi", result=result)
-        dt = datetime.now()
-        stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
-        stats.save()
+            all_gigi = np.hstack(np.array(all_gigi))
+            all_gigi_plot = np.hstack(np.array(all_gigi_plot))
+            element = Counter(all_gigi).keys() 
+            frequency = Counter(all_gigi).values()
+            element_plot = Counter(all_gigi_plot).keys() 
+            frequency_plot = Counter(all_gigi_plot).values()
 
-        return Response(stats.image.url)
+            element = list(element)
+            frequency = list(np.array(list(frequency)) - 1)
+
+            figure = io.BytesIO()
+            
+            fig1, ax1 = plt.subplots()
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
+            ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
+            ax1.axis('equal')
+            plt.tight_layout()
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            result = frequency
+            stats = Statistics(tipe="kondisi", result=result)
+            dt = datetime.now()
+            stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.save()
+            plt.clf()
+
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif tipe == 'ohis':
+            ## Statistik O-His
+            queryset = OHIS.objects.all()
+            serializer = OHISGetSerializer(queryset, many=True)
+
+            all_kondisi = ["Baik", "Sedang", "Buruk"]
+            all_kondisi_plot = []
+            for ohis in serializer.data:
+                kondisi = list(ohis.values())[0]
+                all_kondisi.append(kondisi)
+                all_kondisi_plot.append(kondisi)
+
+            element = Counter(all_kondisi).keys() 
+            frequency = Counter(all_kondisi).values()
+            element_plot = Counter(all_kondisi_plot).keys() 
+            frequency_plot = Counter(all_kondisi_plot).values()
+
+            element = list(element)
+            frequency = list(np.array(list(frequency)) - 1)
+            print(element)
+            figure = io.BytesIO()
+            
+            fig1, ax1 = plt.subplots()
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
+            ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
+            ax1.axis('equal')
+            plt.tight_layout()
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            result = frequency
+            stats = Statistics(tipe="ohis", result=result)
+            dt = datetime.now()
+            stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.save()
+            plt.clf()
+
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            return Response("Error", status=status.HTTP_400_BAD_REQUEST)
 
 class FotoRontgenView(APIView):
     parser_class = (FileUploadParser,)

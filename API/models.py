@@ -4,6 +4,7 @@ from django.db import models
 class User(AbstractUser):
     is_pasien = models.BooleanField(default=False)
     is_dokter = models.BooleanField(default=False)
+    is_manajer = models.BooleanField(default=False)
 
 class Pasien(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
@@ -33,7 +34,7 @@ class Manajer(models.Model):
     GenderChoice = (('L', 'Laki-laki'), ('P', 'Perempuan'))
     jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
     alamat = models.CharField(max_length=255, null=False)
-    tanggalLahir = models.DateField
+    tanggalLahir = models.DateField(null=False)
 
 class FAQ(models.Model):
     question = models.CharField(max_length=255, null=False)
@@ -66,7 +67,7 @@ class Gigi(models.Model):
 
 class OHIS(models.Model):
     rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)
-    kondisi = models.CharField(max_length=2, null=False)
+    kondisi = models.CharField(max_length=255, null=False)
 
 class FotoRontgen(models.Model):
     rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)

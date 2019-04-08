@@ -1,2 +1,2 @@
 web: gunicorn dentis_API.wsgi
-release: python manage.py migrate
+release: ./release-tasks.sh
