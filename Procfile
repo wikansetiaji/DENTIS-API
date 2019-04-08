@@ -1,2 +1,2 @@
 web: gunicorn dentis_API.wsgi
-release: python manage.py migrate
+release: chmod u+x release.sh && ./release.sh

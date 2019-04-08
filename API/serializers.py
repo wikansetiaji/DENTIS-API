@@ -118,7 +118,7 @@ class PasienPostSerializer(serializers.Serializer):
     nama= serializers.CharField(required=True)
     jenisKelamin= serializers.CharField(required=True)
     alamat= serializers.CharField(required=False)
-    tanggalLahir= serializers.DateField(required=False)
+    tanggalLahir= serializers.DateField(required=False,)
     def validate(self, data):
         username = data.get("username", "")
         password = data.get("password", "")
@@ -133,7 +133,11 @@ class PasienPostSerializer(serializers.Serializer):
             if username and password and email: 
                 try:
                     user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)
-                    pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat,tanggalLahir=tanggalLahir)
+                    if (tanggalLahir==""):
+                        pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat)
+                    else:
+                        pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat,tanggalLahir=tanggalLahir)
+                    
                     pasien.save()
                 except:
                     msg = "Email or username not unique"
@@ -141,8 +145,8 @@ class PasienPostSerializer(serializers.Serializer):
                 data["user"] = user
             else:
                 try:
-                    user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)                   
-                    pasien = Pasien(user=user,nama=nama,no_hp=no_hp,jenisKelamin=jenisKelamin,alamat=alamat,tanggalLahir=tanggalLahir)
+                    #user = User.objects.create_user(username=username,password=password,email=email,is_pasien=True)                   
+                    pasien = Pasien(nama=nama,jenisKelamin=jenisKelamin)
                     pasien.save()
                 except():
                     msg = "Error creating pasien"
@@ -154,6 +158,7 @@ class PasienPostSerializer(serializers.Serializer):
         return data
     
 class PasienGetSerializer(serializers.Serializer):
+    id = serializers.CharField()
     user = UserSerializer(read_only=True)
     no_hp= serializers.CharField()
     nama= serializers.CharField()
@@ -162,12 +167,14 @@ class PasienGetSerializer(serializers.Serializer):
     tanggalLahir= serializers.DateField()
 
 class PasienPatchSerializer(serializers.Serializer):
-    user = UserSerializer(read_only=True)
-    no_hp= serializers.CharField()
-    nama= serializers.CharField()
-    jenisKelamin= serializers.CharField()
-    alamat= serializers.CharField()
-    tanggalLahir= serializers.DateField()
+    username = serializers.CharField(required=False)
+    password = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    no_hp= serializers.CharField(required=False)
+    nama= serializers.CharField(required=True)
+    jenisKelamin= serializers.CharField(required=True)
+    alamat= serializers.CharField(required=False)
+    tanggalLahir= serializers.DateField(required=False)
     def validate(self, data):
         password = self.context.get("password")
         email = self.context.get("email")
@@ -178,7 +185,7 @@ class PasienPatchSerializer(serializers.Serializer):
         tanggalLahir = data.get("tanggalLahir", "")
         pasien = self.instance
         user = pasien.user
-        if password and email and nama and jenisKelamin and alamat and tanggalLahir:
+        if password and email:
             try:
                 user.password=password
                 user.email=email
@@ -186,7 +193,10 @@ class PasienPatchSerializer(serializers.Serializer):
                 pasien.nama=nama
                 pasien.jenisKelamin=jenisKelamin
                 pasien.alamat=alamat
-                pasien.tanggalLahir=tanggalLahir
+                if (tanggalLahir==""):
+                    pass
+                else:
+                    pasien.tanggalLahir=tanggalLahir
                 pasien.save()
             except:
                 msg = "Email already used"
@@ -313,6 +323,7 @@ class DokterPostSerializer(serializers.Serializer):
         if username and password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir and strDokter:
             try:
                 user = User.objects.create_user(username=username,password=password,email=email,is_dokter=True)
+                user.save()
                 dokter = Dokter(user=user, nama=nama, ktp=ktp, strDokter=strDokter, jenisKelamin=jenisKelamin, alamat=alamat, tanggalLahir=tanggalLahir, no_hp=no_hp)
                 dokter.save()
             except:
@@ -482,3 +493,6 @@ class OHISGetSerializer(serializers.Serializer):
 
 class RekamMedisSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField()
+class FotoRontgenSerializer(serializers.Serializer):
+    idRekamMedis = serializers.CharField()
+    foto = serializers.ImageField()

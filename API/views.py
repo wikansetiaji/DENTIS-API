@@ -19,6 +19,8 @@ from django.core.files.images import ImageFile
 import io
 from io import BytesIO
 import matplotlib.pyplot as plt
+from datetime import datetime
+from rest_framework.parsers import FileUploadParser
 from datetime import datetime, date
 import calendar
 from dateutil import tz
@@ -82,7 +84,7 @@ class PasienDetailView(APIView):
     permission_classes = (IsAdminOrManajer,IsAuthenticated,)
     def get_object(self, id):
         try:
-            return Pasien.objects.get(user_id=id)
+            return Pasien.objects.get(id=id)
         except Pasien.DoesNotExist:
             raise Http404
     def get(self, request, id, format=None):
@@ -107,8 +109,6 @@ class DoktersView(APIView):
     def post(self, request, format=None):
         serializer = DokterPostSerializer(data=request.data) #validates and saves dokter
         if serializer.is_valid():
-            user = serializer.validated_data["user"]
-            django_login(request, user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def get(self, request, format=None):
@@ -470,3 +470,19 @@ class StatisticsView(APIView):
 
         else:
             return Response("Error", status=status.HTTP_400_BAD_REQUEST)
+
+class FotoRontgenView(APIView):
+    parser_class = (FileUploadParser,)
+
+    def post(self, request, *args, **kwargs):
+
+      file_serializer = FotoRontgenSerializer(data=request.data)
+
+      if file_serializer.is_valid():
+          foto = request.FILES['foto']
+          print(file_serializer.data["foto"])
+          foto = FotoRontgen(foto=foto, rekam_medis=RekamMedis.objects.get(id=file_serializer.data["idRekamMedis"]))
+          foto.save()
+          return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+      else:
+          return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io
-
+/staticfiles/
 ### OSX ###
 .DS_Store
 .AppleDouble .LSOverride
@@ -33,6 +33,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+.staticfiles
 env/
 charts/
 build/
@@ -86,6 +87,8 @@ __pycache__/
 local_settings.py
 #ubh diiiiiaaaaaaaa
 .env
+.staticfiles
+/staticfiles
 db.sqlite3
 .idea/
 local_settings.py
