@@ -365,6 +365,7 @@ class StatisticsView(APIView):
             plt.xlabel('Hari', fontsize=10)
             plt.ylabel('Jumlah Pengunjung', fontsize=10)
             plt.xticks(index, element, fontsize=10, rotation=30)
+            plt.tight_layout()
             plt.savefig(figure, format="png")
             
             content_file = ImageFile(figure)
@@ -458,8 +459,14 @@ class StatisticsView(APIView):
             plt.savefig(figure, format="png")
             
             content_file = ImageFile(figure)
-            result = frequency
-            stats = Statistics(tipe="ohis", result=result)
+            result = np.array(frequency)
+            total = np.sum(result)
+            result = (result / total) * 100
+            result_final = []
+            for element in result:
+                element = str(element) + '%'
+                result_final.append(element)
+            stats = Statistics(tipe="ohis", result=result_final)
             dt = datetime.now()
             stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
             stats.save()
