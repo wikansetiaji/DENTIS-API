@@ -1,2 +1,2 @@
-python manage.py migrate --run-syncd
+python manage.py makemigrations
 python manage.py migrate
