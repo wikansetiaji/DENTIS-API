@@ -18,7 +18,7 @@ from collections import Counter
 from django.core.files.images import ImageFile
 import io
 from io import BytesIO
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 from datetime import datetime
 from rest_framework.parsers import FileUploadParser
 from datetime import datetime, date
@@ -375,6 +375,7 @@ class StatisticsView(APIView):
             stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
             stats.save()
             plt.clf()
+            plt.close()
             
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -421,6 +422,7 @@ class StatisticsView(APIView):
             stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
             stats.save()
             plt.clf()
+            plt.close()
 
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -464,6 +466,7 @@ class StatisticsView(APIView):
             stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
             stats.save()
             plt.clf()
+            plt.close()
 
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
