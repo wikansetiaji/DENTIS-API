@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io
-/staticfiles/
+staticfiles/
 ### OSX ###
 .DS_Store
 .AppleDouble .LSOverride
@@ -89,6 +89,7 @@ local_settings.py
 .env
 .staticfiles
 /staticfiles
+db.sqlite3
 .idea/
 local_settings.py
 adaTeman/settings/local.py
