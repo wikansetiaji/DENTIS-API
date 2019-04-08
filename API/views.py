@@ -415,10 +415,7 @@ class StatisticsView(APIView):
             result = np.array(frequency)
             total = np.sum(result)
             result = (result / total) * 100
-            result_final = []
-            for element in result:
-                element = str(element) + '%'
-                result_final.append(element)
+            result_final = list(result)
             stats = Statistics(tipe="kondisi", result=result_final)
             dt = datetime.now()
             stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
@@ -447,7 +444,6 @@ class StatisticsView(APIView):
 
             element = list(element)
             frequency = list(np.array(list(frequency)) - 1)
-            print(element)
             figure = io.BytesIO()
             
             fig1, ax1 = plt.subplots()
@@ -462,10 +458,7 @@ class StatisticsView(APIView):
             result = np.array(frequency)
             total = np.sum(result)
             result = (result / total) * 100
-            result_final = []
-            for element in result:
-                element = str(element) + '%'
-                result_final.append(element)
+            result_final = list(result)
             stats = Statistics(tipe="ohis", result=result_final)
             dt = datetime.now()
             stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
