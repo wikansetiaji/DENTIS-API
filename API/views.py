@@ -416,7 +416,7 @@ class StatisticsView(APIView):
             result = np.array(frequency)
             total = np.sum(result)
             result = (result / total) * 100
-            result_final = list(result)
+            result_final = list(np.around(result, decimals=2))
             stats = Statistics(tipe="kondisi", result=result_final)
             dt = datetime.now()
             stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
@@ -460,7 +460,7 @@ class StatisticsView(APIView):
             result = np.array(frequency)
             total = np.sum(result)
             result = (result / total) * 100
-            result_final = list(result)
+            result_final = list(np.around(result, decimals=2))
             stats = Statistics(tipe="ohis", result=result_final)
             dt = datetime.now()
             stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
