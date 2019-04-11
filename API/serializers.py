@@ -492,7 +492,10 @@ class OHISGetSerializer(serializers.Serializer):
     kondisi = serializers.CharField()
 
 class RekamMedisSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    pasien = PasienGetSerializer()
     created_at = serializers.DateTimeField()
+
 class FotoRontgenSerializer(serializers.Serializer):
     idRekamMedis = serializers.CharField()
     foto = serializers.ImageField()
