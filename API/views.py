@@ -326,17 +326,52 @@ class OHISView(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class StatisticsView(APIView):
-    def get(self, request, tipe, format=None):
+    def get(self, request, tipe, gender=None, format=None):
+
+        ## Get All
+        today = date.today()
+        queryset = RekamMedis.objects.filter(created_at__month=today.month)
+        serializer = RekamMedisSerializer(queryset, many=True)
+        
+        ids = []
+        record_ids = []
+
+        ## If Pria
+        if gender == "pria":    
+            for data in serializer.data:
+                if data["pasien"]["jenisKelamin"].upper() == "L":
+                    ids.append(data["pasien"]["id"])
+                    record_ids.append(data["id"])
+        
+        ## If Perempuan
+        elif gender == "perempuan":
+            ids = []
+            record_ids = []
+            for data in serializer.data:
+                if data["pasien"]["jenisKelamin"].upper() == "P":
+                    ids.append(data["pasien"]["id"])
+                    record_ids.append(data["id"])
+        
+        ## If None
+        elif gender == None:
+            for data in serializer.data:
+                ids.append(data["pasien"]["id"])
+                record_ids.append(data["id"])
+        
+        ids = list(set(ids))
+        record_ids = list(set(record_ids))
+
+        ## Filtered
+        queryset = RekamMedis.objects.filter(pasien_id__in=ids)
+        serializer = RekamMedisSerializer(queryset, many=True)
+
+        ## Statistik Pengunjung
         if tipe == 'pengunjung':
-            ## Statistik Pengunjung
-            today = date.today()
-            queryset = RekamMedis.objects.filter(created_at__month=today.month)
-            serializer = RekamMedisSerializer(queryset, many=True)
             jumlah_pengunjung_total = len(queryset)
 
             days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
             for record in serializer.data:
-                date_str = list(record.values())[0]
+                date_str = record["created_at"]
                 split = list(date_str)
                 split.remove('Z')
                 split.insert(11, ' ')
@@ -380,9 +415,9 @@ class StatisticsView(APIView):
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
+        ## Statistik Kondisi
         elif tipe == 'kondisi':
-            ## Statistik Kondisi
-            queryset = Gigi.objects.all()
+            queryset = Gigi.objects.filter(rekam_medis_id__in=record_ids)
             serializer = GigiSerializer(queryset, many=True)
 
             all_gigi = [[x for x in range(-1, 11)]]
@@ -427,9 +462,9 @@ class StatisticsView(APIView):
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
+        ## Statistik O-His
         elif tipe == 'ohis':
-            ## Statistik O-His
-            queryset = OHIS.objects.all()
+            queryset = OHIS.objects.filter(rekam_medis_id__in=record_ids)
             serializer = OHISGetSerializer(queryset, many=True)
 
             all_kondisi = ["Baik", "Sedang", "Buruk"]
