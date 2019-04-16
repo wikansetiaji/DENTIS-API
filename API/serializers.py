@@ -185,14 +185,16 @@ class PasienPatchSerializer(serializers.Serializer):
         tanggalLahir = data.get("tanggalLahir", "")
         pasien = self.instance
         user = pasien.user
-        if password and email:
+        if email:
             try:
-                user.password=password
+                if (password):
+                    user.set_password(password)
                 user.email=email
                 user.save()
                 pasien.nama=nama
                 pasien.jenisKelamin=jenisKelamin
                 pasien.alamat=alamat
+                pasien.no_hp=no_hp
                 if (tanggalLahir==""):
                     pass
                 else:
@@ -277,9 +279,10 @@ class ManajerPatchSerializer(serializers.Serializer):
         tanggalLahir = data.get("tanggalLahir", "")
         manajer = self.instance
         user = manajer.user
-        if password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir:
+        if email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir:
             try:
-                user.password=password
+                if (password):
+                    user.set_password(password)
                 user.email=email
                 user.save()
                 manajer.nama=nama
@@ -367,9 +370,10 @@ class DokterPatchSerializer(serializers.Serializer):
         strDokter = data.get("strDokter", "")
         dokter = self.instance
         user = dokter.user
-        if password and email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir and strDokter:
+        if email and nama and ktp and no_hp and jenisKelamin and alamat and tanggalLahir and strDokter:
             try:
-                user.password=password
+                if (password):
+                    user.set_password(password)
                 user.email=email
                 user.save()
                 dokter.nama=nama

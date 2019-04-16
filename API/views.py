@@ -76,7 +76,12 @@ class PasiensView(APIView):
             return Response(serializer.validated_data["user"].id, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def get(self, request, format=None):
-        queryset = Pasien.objects.all()
+        if request.GET.get('type')=='non-user':
+            queryset = Pasien.objects.filter(user__isnull=True)
+        elif request.GET.get('type')=='user':
+            queryset = Pasien.objects.filter(user__isnull=False)
+        else:
+            queryset = Pasien.objects.all()
         serializer = PasienGetSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -102,7 +107,7 @@ class PasienDetailView(APIView):
         if pasien.user != None :
             pasien.user.delete()
         #serializer = PasienDeleteSerializer(pasien)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 class DoktersView(APIView):
     permission_classes = (IsAdmin, IsAuthenticated,)
@@ -138,7 +143,7 @@ class DokterDetailView(APIView):
         if dokter.user != None :
             dokter.user.delete()
         #serializer = PasienDeleteSerializer(pasien)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 class ManajerView(APIView):
     permission_classes = (IsAdminOrManajer,IsAuthenticated,)
@@ -175,7 +180,7 @@ class ManajerDetailView(APIView):
         manajer = self.get_object(id)
         if manajer.user != None :
             manajer.user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 class FAQsView(APIView):
     def get_permissions(self):
