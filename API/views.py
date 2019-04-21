@@ -182,6 +182,59 @@ class ManajerDetailView(APIView):
             manajer.user.delete()
         return Response(status=status.HTTP_200_OK)
 
+class DoktersView(APIView):
+    permission_classes = (IsAdmin, IsAuthenticated,)
+    def post(self, request, format=None):
+        serializer = DokterPostSerializer(data=request.data) #validates and saves dokter
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, format=None):
+        queryset = Dokter.objects.all()
+        serializer = DokterGetSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class InstansiView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            permission_classes = [IsAdminOrManajer]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    def post(self, request, format=None):
+        serializer = InstansiPostSerializer(data=request.data) #validates and saves faq
+        if serializer.is_valid():
+            instansi = serializer.validated_data["instansi"]
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, format=None):
+        queryset = Instansi.objects.all()
+        serializer = InstansiGetSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+class InstansiDetailView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'PATCH':
+            permission_classes = [IsAdminOrManajer]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    def get_object(self, id):
+        try:
+            return Instansi.objects.get(id=id)
+        except Instansi.DoesNotExist:
+            raise Http404
+    def get(self, request, id, format=None):
+        instansi = self.get_object(id)
+        serializer = InstansiGetSerializer(instansi)
+        return Response(serializer.data)
+    def patch(self, request, id, format=None):
+        instansi = self.get_object(id)
+        serializer = InstansiPatchSerializer(instansi, data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class FAQsView(APIView):
     def get_permissions(self):
         if self.request.method == 'POST':

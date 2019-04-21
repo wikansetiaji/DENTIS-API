@@ -35,6 +35,14 @@ class Manajer(models.Model):
     jenisKelamin = models.CharField(max_length=1, choices=GenderChoice)
     alamat = models.CharField(max_length=255, null=False)
     tanggalLahir = models.DateField(null=False)
+    
+class Instansi(models.Model) :
+    nama = models.CharField(max_length=255, null=False)
+    alamat = models.CharField(max_length=255, null=False)
+    emailInstansi = models.CharField(max_length=255, null=False) 
+    noTelepon = models.CharField(max_length=255, null=False)
+    layanan = models.CharField(max_length=255, null=False)
+    waktuLayanan = models.CharField(max_length=255, null=False)
 
 class FAQ(models.Model):
     question = models.CharField(max_length=255, null=False)

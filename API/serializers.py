@@ -393,6 +393,75 @@ class DokterPatchSerializer(serializers.Serializer):
             raise exceptions.ValidationError(msg)
         return data
 
+class InstansiPostSerializer(serializers.Serializer):
+    nama = serializers.CharField()
+    alamat = serializers.CharField()
+    emailInstansi = serializers.CharField() 
+    noTelepon = serializers.CharField()
+    layanan = serializers.CharField()
+    waktuLayanan = serializers.CharField()
+
+    def validate(self, data):
+        nama = data.get("nama", "")
+        alamat = data.get("alamat", "")
+        emailInstansi = data.get("emailInstansi", "")
+        noTelepon = data.get("noTelepon", "")
+        layanan = data.get("layanan", "")
+        waktuLayanan = data.get("waktuLayanan", "")
+        if nama and alamat and emailInstansi and noTelepon and layanan and waktuLayanan:
+            try:
+                instansi = Instansi(nama=nama, alamat=alamat, emailInstansi=emailInstansi, noTelepon=noTelepon, layanan=layanan, waktuLayanan=waktuLayanan)
+                instansi.save()
+            except:
+                msg = "Error creating Instansi"
+                raise exceptions.ValidationError(msg)
+            data["instansi"] = instansi
+        else:
+            msg = "Must provide all the data"
+            raise exceptions.ValidationError(msg)
+        return data
+    
+class InstansiGetSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    nama = serializers.CharField()
+    alamat = serializers.CharField()
+    emailInstansi = serializers.CharField() 
+    noTelepon = serializers.CharField()
+    layanan = serializers.CharField()
+    waktuLayanan = serializers.CharField()
+
+class InstansiPatchSerializer(serializers.Serializer):
+    nama = serializers.CharField()
+    alamat = serializers.CharField()
+    emailInstansi = serializers.CharField() 
+    noTelepon = serializers.CharField()
+    layanan = serializers.CharField()
+    waktuLayanan = serializers.CharField()
+    def validate(self, data):
+        nama = data.get("nama", "")
+        alamat = data.get("alamat", "")
+        emailInstansi = data.get("emailInstansi", "")
+        noTelepon = data.get("noTelepon", "")
+        layanan = data.get("layanan", "")
+        waktuLayanan = data.get("waktuLayanan", "")
+        if nama and alamat and emailInstansi and noTelepon and layanan and waktuLayanan:
+            try:
+                self.instance.nama=nama
+                self.instance.alamat=alamat
+                self.instance.emailInstansi=emailInstansi
+                self.instance.noTelepon=noTelepon
+                self.instance.layanan=layanan
+                self.instance.waktuLayanan=waktuLayanan
+                self.instance.save()
+            except:
+                msg = "Instansi edit error"
+                raise exceptions.ValidationError(msg)
+            data["instansi"] = self.instance
+        else:
+            msg = "Must provide all the data"
+            raise exceptions.ValidationError(msg)
+        return data
+
 class FAQPostSerializer(serializers.Serializer):
     question = serializers.CharField()
     answer = serializers.CharField()

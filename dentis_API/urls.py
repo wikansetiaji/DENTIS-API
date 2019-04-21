@@ -41,6 +41,8 @@ urlpatterns = [
     path('manajer/<int:id>/', views.ManajerDetailView.as_view()),
     path('dokter/', views.DoktersView.as_view()),
     path('dokter/<int:id>/', views.DokterDetailView.as_view()),
+    path('instansi/', views.InstansiView.as_view()),
+    path('instansi/<int:id>/', views.InstansiDetailView.as_view()),
     path('faqs/', views.FAQsView.as_view()),
     path('faqs/<int:id>/', views.FAQDetailView.as_view()),
     path('news/', views.NewsView.as_view()),
