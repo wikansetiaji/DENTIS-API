@@ -572,3 +572,15 @@ class RekamMedisSerializer(serializers.Serializer):
 class FotoRontgenSerializer(serializers.Serializer):
     idRekamMedis = serializers.CharField()
     foto = serializers.ImageField()
+
+class FotoRontgenGetSerializer(serializers.Serializer):
+    foto = serializers.ImageField()
+
+class RekamMedisGetSerializer(serializers.ModelSerializer):
+    gigi_set = GigiSerializer(many=True)
+    fotorontgen_set = FotoRontgenGetSerializer(many=True)
+    dokter = DokterGetSerializer()
+    pasien = PasienGetSerializer()
+    class Meta:
+        model = RekamMedis
+        fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set',)

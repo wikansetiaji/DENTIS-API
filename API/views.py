@@ -67,7 +67,7 @@ class LogoutView(viewsets.ViewSet):
         return Response({"message":"Logout successful"}, status=204)
 
 class PasiensView(APIView):
-    permission_classes = (IsAdminOrDokter,IsAuthenticated,)
+    permission_classes = ()
     def post(self, request, format=None):
         serializer = PasienPostSerializer(data=request.data) #validates and saves pasien
         if serializer.is_valid():
@@ -86,7 +86,7 @@ class PasiensView(APIView):
         return Response(serializer.data)
 
 class PasienDetailView(APIView):
-    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     def get_object(self, id):
         try:
             return Pasien.objects.get(id=id)
@@ -110,7 +110,7 @@ class PasienDetailView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class DoktersView(APIView):
-    permission_classes = (IsAdmin, IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     def post(self, request, format=None):
         serializer = DokterPostSerializer(data=request.data) #validates and saves dokter
         if serializer.is_valid():
@@ -122,7 +122,7 @@ class DoktersView(APIView):
         return Response(serializer.data)
 
 class DokterDetailView(APIView):
-    permission_classes = (IsAdminOrManajer,IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     def get_object(self, id):
         try:
             return Dokter.objects.get(user_id=id)
@@ -183,7 +183,7 @@ class ManajerDetailView(APIView):
         return Response(status=status.HTTP_200_OK)
 
 class DoktersView(APIView):
-    permission_classes = (IsAdmin, IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
     def post(self, request, format=None):
         serializer = DokterPostSerializer(data=request.data) #validates and saves dokter
         if serializer.is_valid():
@@ -582,3 +582,18 @@ class FotoRontgenView(APIView):
           return Response(file_serializer.data, status=status.HTTP_201_CREATED)
       else:
           return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class PasienRekamMedisView(APIView):
+    def get(self, request, format=None):
+        pasien = Pasien.objects.get(user=request.user)
+        queryset = pasien.rekammedis_set.all()
+        serializer = RekamMedisGetSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+
+class PasienProfileView(APIView):
+    def get(self, request, format=None):
+        pasien = Pasien.objects.get(user=request.user)
+        serializer = PasienGetSerializer(pasien)
+        print(pasien)
+        return Response(serializer.data)
