@@ -350,6 +350,8 @@ class OdontogramView(viewsets.ViewSet):
                     o = o,
                     m = i["m"],
                     v = i["v"],
+                    di = i["di"],
+                    ci = i["ci"],
                     rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"])
                 )
                 gigi.save()

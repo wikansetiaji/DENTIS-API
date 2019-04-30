@@ -72,6 +72,8 @@ class Gigi(models.Model):
     o = models.IntegerField(null=True)
     m = models.IntegerField(null=False)
     v = models.IntegerField(null=False)
+    di = models.IntegerField(null=True)
+    ci = models.IntegerField(null=True)
 
 class OHIS(models.Model):
     rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)

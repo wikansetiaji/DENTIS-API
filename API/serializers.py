@@ -543,6 +543,8 @@ class GigiSerializer(serializers.Serializer):
     o = serializers.IntegerField(required=False)
     m = serializers.IntegerField()
     v = serializers.IntegerField()
+    di = serializers.IntegerField(required=False,allow_null=True)
+    ci = serializers.IntegerField(required=False,allow_null=True)
 
 class OdontogramPostSerializer(serializers.Serializer):
     idRekamMedis = serializers.CharField()
