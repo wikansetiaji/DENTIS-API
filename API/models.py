@@ -88,17 +88,17 @@ class JadwalPraktek(models.Model):
     waktu_selesai = models.DateTimeField(null=False)
     no_ruangan = models.IntegerField(null=False)
 
-class JenisPenanganan(models.Model):
-    nama = models.CharField(null=False)
-    harga = models.IntegerField(null=False)
-
-class Penanganan(models.Model):
-    jenis_penanganan = models.ForeignKey(JenisPenanganan, on_delete=models.CASCADE)
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-
-class Appointment(model.Model):
+class Appointment(models.Model):
     is_booked = models.BooleanField(default=False)
     pasien = models.ForeignKey(Pasien, on_delete=models.CASCADE)
     dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE)
     rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)
     jadwal = models.ForeignKey(JadwalPraktek, on_delete=models.CASCADE)
+
+class JenisPenanganan(models.Model):
+    nama = models.CharField(null=False, max_length=255)
+    harga = models.IntegerField(null=False)
+
+class Penanganan(models.Model):
+    jenis_penanganan = models.ForeignKey(JenisPenanganan, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
