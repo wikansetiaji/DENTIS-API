@@ -90,9 +90,9 @@ class JadwalPraktek(models.Model):
 
 class Appointment(models.Model):
     is_booked = models.BooleanField(default=False)
-    pasien = models.ForeignKey(Pasien, on_delete=models.CASCADE)
-    dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE)
-    rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)
+    pasien = models.ForeignKey(Pasien, on_delete=models.CASCADE, null=True)
+    dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE, null=True)
+    rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE, null=True)
     jadwal = models.ForeignKey(JadwalPraktek, on_delete=models.CASCADE)
 
 class JenisPenanganan(models.Model):

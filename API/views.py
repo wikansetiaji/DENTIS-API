@@ -599,3 +599,32 @@ class PasienProfileView(APIView):
         serializer = PasienGetSerializer(pasien)
         print(pasien)
         return Response(serializer.data)
+
+class AppointmentPasienView(APIView):
+    def get(self, request, format=None):
+        pasien = Pasien.objects.get(user=request.user)
+        queryset = pasien.appointment_set.all()
+        serializer = AppointmentSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+    
+    def post(self, request, format=None):
+        serializer = AppointmentPostSerializer(data=request.data)
+        serializer.is_valid()
+        appointment = Appointment(
+            is_booked = serializer.data["is_booked"],
+            pasien = Pasien.objects.get(user_id=serializer.data["idPasien"]),
+            dokter = Dokter.objects.get(user_id=serializer.data["idDokter"]),
+            rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"]),
+            jadwal = JadwalPraktek.objects.get(id=serializer.data["idJadwal"])
+        )
+        appointment.save()
+        return Response(serializer.data)
+
+class AppointmentAvailableView(APIView):
+    def get(self, request, format=None):
+        queryset = Appointment.objects.all()
+        serializers = AppointmentSerializer(data=queryset, many=True)
+        serializers.is_valid()
+        return Response(serializers.data) 
+

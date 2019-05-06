@@ -586,3 +586,24 @@ class RekamMedisGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = RekamMedis
         fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set',)
+
+class JadwalPraktekGetSerializer(serializers.Serializer):
+    waktu_mulai = serializers.DateTimeField()
+    waktu_selesai = serializers.DateTimeField()
+    no_ruangan = serializers.IntegerField()
+
+class AppointmentSerializer(serializers.Serializer):
+    is_booked = serializers.BooleanField()
+    pasien = PasienGetSerializer()
+    dokter = DokterGetSerializer()
+    rekam_medis = RekamMedisGetSerializer()
+    jadwal = JadwalPraktekGetSerializer()
+
+class AppointmentPostSerializer(serializers.Serializer):
+    is_booked = serializers.BooleanField()
+    idPasien = serializers.CharField(required=False)
+    idDokter = serializers.CharField(required=False)
+    idRekamMedis = serializers.CharField(required=False)
+    idJadwal = serializers.CharField()
+
+
