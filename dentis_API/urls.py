@@ -50,7 +50,9 @@ urlpatterns = [
     path('pasien-profile/', views.PasienProfileView.as_view()),
     path('statistics/<str:tipe>/', views.StatisticsView.as_view()),
     path('statistics/<str:tipe>/<str:gender>/', views.StatisticsView.as_view()),
-    path('appointment/', views.AppointmentPasienView.as_view()),
-    path('appointment/choose', views.AppointmentAvailableView.as_view()),
+    path('appointment-pasien/', views.AppointmentPasienView.as_view()),
+    path('appointment/choose/', views.AppointmentAvailableView.as_view()),
+    path('jadwal-available/', views.JadwalPraktekAvailableView.as_view()),
+    path('jenis-penanganan/', views.JenisPenangananView.as_view()),
     url(r'^logout/',views.LogoutView.as_view({'post':'post'})),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

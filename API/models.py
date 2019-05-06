@@ -102,3 +102,10 @@ class JenisPenanganan(models.Model):
 class Penanganan(models.Model):
     jenis_penanganan = models.ForeignKey(JenisPenanganan, on_delete=models.CASCADE)
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+
+class JawabanSurvey(models.Model):
+    no = models.IntegerField(null=False)
+    jawaban = models.CharField(null=False, max_length=255)
+    dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE, null=True)
+    tipe = models.CharField(null=False, max_length=255)
+

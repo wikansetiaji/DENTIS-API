@@ -611,11 +611,17 @@ class AppointmentPasienView(APIView):
     def post(self, request, format=None):
         serializer = AppointmentPostSerializer(data=request.data)
         serializer.is_valid()
+        pasien = Pasien.objects.get(user=request.user)
+        rekam_medis = None
+        try:
+            rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"])
+        except:
+            pass
         appointment = Appointment(
             is_booked = serializer.data["is_booked"],
-            pasien = Pasien.objects.get(user_id=serializer.data["idPasien"]),
+            pasien = pasien,
             dokter = Dokter.objects.get(user_id=serializer.data["idDokter"]),
-            rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"]),
+            rekam_medis = rekam_medis,
             jadwal = JadwalPraktek.objects.get(id=serializer.data["idJadwal"])
         )
         appointment.save()
@@ -628,3 +634,33 @@ class AppointmentAvailableView(APIView):
         serializers.is_valid()
         return Response(serializers.data) 
 
+class JadwalPraktekAvailableView(APIView):
+    def get(self, request, format=None):
+        queryset = JadwalPraktek.objects.filter(appointment__isnull=True)
+        serializers = JadwalPraktekGetSerializer(data=queryset, many=True)
+        serializers.is_valid()
+        return Response(serializers.data)
+
+class JenisPenangananView(APIView):
+    def get(self, request, format=None):
+        queryset = JenisPenanganan.objects.all()
+        serializers = JenisPenangananSerializer(data=queryset, many=True)
+        serializers.is_valid()
+        return Response(serializers.data)
+
+class JawabanSurvey(APIView):
+    def post(self, request, format=None):
+        serializer = JawabanSurveyListSerializer(data=request.data)
+        serializer.is_valid()
+        dokter = Dokter.objects.get(user=request.user)
+        for a in serializer.data["jawaban"]:
+            jawabanSurvey = JawabanSurvey(
+                no=a["no"],
+                jawaban=a["jawaban"],
+                dokter = dokter,
+                tipe = a["tipe"]
+            )
+            jawabanSurvey.save()
+        return Response(serializer.data)
+
+    
