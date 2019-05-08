@@ -615,7 +615,7 @@ class JenisPenangananSerializer(serializers.Serializer):
 
 class JawabanSurveySerializer(serializers.Serializer):
     no = serializers.IntegerField()
-    jawaban = serializers.CharField()
+    jawaban = serializers.IntegerField()
     tipe = serializers.CharField()
 
 class JawabanSurveyListSerializer(serializers.Serializer):

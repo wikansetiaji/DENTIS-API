@@ -105,7 +105,7 @@ class Penanganan(models.Model):
 
 class JawabanSurvey(models.Model):
     no = models.IntegerField(null=False)
-    jawaban = models.CharField(null=False, max_length=255)
+    jawaban = models.IntegerField(null=False)
     dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE, null=True)
     tipe = models.CharField(null=False, max_length=255)
 
