@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from weasyprint import HTML, CSS
 from .serializers import *
 from django.contrib.auth import login as django_login, logout as django_logout
 from rest_framework import views, viewsets, filters, mixins, generics
@@ -19,6 +20,8 @@ from django.core.files.images import ImageFile
 import io
 from io import BytesIO
 from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 from datetime import datetime
 from rest_framework.parsers import FileUploadParser
 from datetime import datetime, date
@@ -678,7 +681,67 @@ class AppointmentAvailableView(APIView):
         queryset = Appointment.objects.all()
         serializers = AppointmentSerializer(data=queryset, many=True)
         serializers.is_valid()
-        return Response(serializers.data) 
+        return Response(serializers.data)
+
+class ManajerReportView(APIView):
+    def get(self, request, format=None):
+        list_tipe = ['pengunjung', 'kondisi', 'ohis']
+        image_urls = []
+        results = []
+        for item in list_tipe:
+            stats = StatisticsView.get(self, request, tipe=item)
+            serializer = StatisticsSerializerURL(data=stats.data)
+            serializer.is_valid()
+            x = serializer.data["result"][1:-1].split(', ')
+            x = [float(i) for i in x]
+            image_urls.append(serializer.data["image"])
+            results.append(x)
+        orang = [int(i) for i in results[0]]
+
+        html = HTML(string='''
+        <h1>Laporan Statistik</h1>
+        
+        <p>Statistik Pengunjung
+        <img src="{}">
+        <ul>
+            <li>Senin: {} orang</li>
+            <li>Selasa: {} orang</li>
+            <li>Rabu: {} orang</li>
+            <li>Kamis: {} orang</li>
+            <li>Jumat: {} orang</li>
+            <li>Sabtu: {} orang</li>
+            <li>Minggu: {} orang</li>
+        </ul>
+
+        <p>Statistik Kondisi Gigi
+        <img src="{}">
+        <ul>
+            <li>Normal: {}%</li>
+            <li>Sound: {}%</li>
+            <li>Caries: {}%</li>
+            <li>Filled with Caries: {}%</li>
+            <li>Filled no Caries: {}%</li>
+            <li>Missing due to Caries: {}%</li>
+            <li>Missing for Another Reason: {}%</li>
+            <li>Fissure Sealant: {}%</li>
+            <li>Fix dental prosthesis/crown, abutment,veneer: {}%</li>
+            <li>Unerupted: {}%</li>
+            <li>Not recorded: {}%</li>
+            <li>Whitespot: {}%</li>
+        </ul>
+
+        <p>Statistik Kondisi OHIS
+        <img src="{}">
+        <ul>
+            <li>Baik: {}%</li>
+            <li>Sedang: {}%</li>
+            <li>Buruk: {}%</li>
+        </ul>
+        
+        '''.format(image_urls[0], *orang, image_urls[1], *results[1], image_urls[2], *results[2]), base_url=request.build_absolute_uri())
+        css = CSS(string='@page { size: A4; margin: 1cm }')
+        html.write_pdf('manajer_report.pdf', stylesheets=[css])
+        return Response("Sukses", status=status.HTTP_200_OK)
 
 class JadwalPraktekAvailableView(APIView):
     def get(self, request, format=None):

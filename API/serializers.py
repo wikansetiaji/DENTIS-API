@@ -512,6 +512,11 @@ class StatisticsSerializer(serializers.Serializer):
     tipe = serializers.CharField()
     result = serializers.CharField()
 
+class StatisticsSerializerURL(serializers.Serializer):
+    image = serializers.CharField()
+    tipe = serializers.CharField()
+    result = serializers.ListField()
+
 class PemeriksaanAwalPostSerializer(serializers.Serializer):
     anamnesa = serializers.CharField()
     alergi = serializers.CharField(required=False)
