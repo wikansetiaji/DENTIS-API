@@ -694,14 +694,15 @@ class JenisPenangananView(APIView):
         serializers.is_valid()
         return Response(serializers.data)
 
-class JawabanSurvey(APIView):
+class JawabanSurveyView(APIView):
     def post(self, request, format=None):
         serializer = JawabanSurveyListSerializer(data=request.data)
         serializer.is_valid()
         dokter = Dokter.objects.get(user=request.user)
+        print(serializer.data)
         for a in serializer.data["jawaban"]:
             jawabanSurvey = JawabanSurvey(
-                no=a["no"],
+                no=int(a["no"]),
                 jawaban=a["jawaban"],
                 dokter = dokter,
                 tipe = a["tipe"]
