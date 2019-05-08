@@ -593,11 +593,13 @@ class RekamMedisGetSerializer(serializers.ModelSerializer):
         fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set',)
 
 class JadwalPraktekGetSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     waktu_mulai = serializers.DateTimeField()
     waktu_selesai = serializers.DateTimeField()
     no_ruangan = serializers.IntegerField()
 
 class AppointmentSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     is_booked = serializers.BooleanField()
     pasien = PasienGetSerializer()
     dokter = DokterGetSerializer()
@@ -611,4 +613,22 @@ class AppointmentPostSerializer(serializers.Serializer):
     idRekamMedis = serializers.CharField(required=False)
     idJadwal = serializers.CharField()
 
+class JenisPenangananSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    nama = serializers.CharField()
+    harga = serializers.IntegerField()
+
+class JawabanSurveySerializer(serializers.Serializer):
+    no = serializers.IntegerField()
+    jawaban = serializers.CharField()
+    tipe = serializers.CharField()
+
+class JawabanSurveyListSerializer(serializers.Serializer):
+    jawaban = serializers.ListField(
+        child=JawabanSurveySerializer()
+    )
+
+class AppointmentPatchSerializer(serializers.Serializer):
+    idDokter = serializers.CharField()
+    idJadwal= serializers.CharField()
 
