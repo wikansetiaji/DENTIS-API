@@ -600,6 +600,52 @@ class PasienProfileView(APIView):
         print(pasien)
         return Response(serializer.data)
 
+class AppointmentsView(APIView):
+    def get(self, request, id, format=None):
+        pasien = Pasien.objects.get(id=id)
+        queryset = pasien.appointment_set.all()
+        serializer = AppointmentSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+    def post(self, request, id, format=None):
+        serializer = AppointmentPostSerializer(data=request.data)
+        serializer.is_valid()
+        pasien = Pasien.objects.get(id=id)
+        rekam_medis = None
+        try:
+            rekam_medis = RekamMedis.objects.get(id=serializer.data["idRekamMedis"])
+        except:
+            pass
+        appointment = Appointment(
+            is_booked = serializer.data["is_booked"],
+            pasien = pasien,
+            dokter = Dokter.objects.get(user_id=serializer.data["idDokter"]),
+            rekam_medis = rekam_medis,
+            jadwal = JadwalPraktek.objects.get(id=serializer.data["idJadwal"])
+        )
+        appointment.save()
+        return Response(serializer.data)
+    
+class AppointmentDetailView(APIView):
+    def get(self, request, id, format=None):
+        appointment = Appointment.objects.get(id=id)
+        serializer = AppointmentSerializer(appointment)
+        return Response(serializer.data)
+    def patch(self, request, id, format=None):
+        appointment = Appointment.objects.get(id=id)
+        serializer = AppointmentPatchSerializer(data=request.data)
+        if serializer.is_valid():
+            appointment.dokter = Dokter.objects.get(user__id=serializer.data["idDokter"])
+            appointment.jadwal = JadwalPraktek.objects.get(id=serializer.data["idJadwal"])
+            appointment.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, id, format=None):
+        appointment = Appointment.objects.get(id=id)
+        appointment.delete()
+        #serializer = PasienDeleteSerializer(pasien)
+        return Response(status=status.HTTP_200_OK)
+
 class AppointmentPasienView(APIView):
     def get(self, request, format=None):
         pasien = Pasien.objects.get(user=request.user)

@@ -50,6 +50,8 @@ urlpatterns = [
     path('pasien-profile/', views.PasienProfileView.as_view()),
     path('statistics/<str:tipe>/', views.StatisticsView.as_view()),
     path('statistics/<str:tipe>/<str:gender>/', views.StatisticsView.as_view()),
+    path('appointment/<int:id>/', views.AppointmentsView.as_view()),
+    path('appointment-detail/<int:id>/', views.AppointmentDetailView.as_view()),
     path('appointment-pasien/', views.AppointmentPasienView.as_view()),
     path('appointment/choose/', views.AppointmentAvailableView.as_view()),
     path('jadwal-available/', views.JadwalPraktekAvailableView.as_view()),

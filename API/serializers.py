@@ -623,3 +623,7 @@ class JawabanSurveyListSerializer(serializers.Serializer):
         child=JawabanSurveySerializer()
     )
 
+class AppointmentPatchSerializer(serializers.Serializer):
+    idDokter = serializers.CharField()
+    idJadwal= serializers.CharField()
+
