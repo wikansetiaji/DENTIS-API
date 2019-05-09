@@ -737,6 +737,73 @@ class ManajerReportView(APIView):
             <li>Sedang: {}%</li>
             <li>Buruk: {}%</li>
         </ul>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+
+        <h1>Laporan Kuisioner</h1>
+        <ul>
+            <li>BAGIAN 1</li>
+            <li>1. Gigi yang sehat adalah gigi yang bersih dan tidak berlubang</li>
+            <li>2. Sakit gigi disebabkan karena malas menggosok gigi.</li>
+            <li>3. Makan cokelat dan permen yang berlebihan dapat menyebabkan sakit gigi.</li>
+            <li>4. Sakit gigi dapat menyebabkan sakit kepala, bau mulut, dan sulit untuk tidur.</li>
+            <li>5. Gigi berlubah merupakan salah satu masalah kesehatan gigi.</li>
+            <li>6. Menggosok gigi minimal 2 kali sehari setelah makan dan sebelum tidur.</li>
+            <li>7. Menggosok gigi cukup dilakukan saat mandi pagi dan sore hari.</li>
+            <li>8. Sikat gigi yang benar adalah yang ujung sikatnya kecil dan pipih sehingga dapat menjangkau bagian belakang gigi.</li>
+            <li>9. Sikat gigi tidak perlu diganti secara rutin.</li>
+            <li>10. Satu sikat gigi boleh dipakai oleh banyak orang (ayah. ibu, kakak, adik).</li>
+            <li>11. Menggosok gigi sebaiknya dilakukan dengan lembut.</li>
+            <li>12. Saat menggosok gigi permukaan gusi dan lidah tidak perlu disikat.</li>
+            <li>13. Menggosok gigi yang benar adalah menggosok seluruh bagian gigi (depan, belakang, sela-sela gigi).</li>
+            <li>14. Setelah menggosok gigi tidak harus berkumur dengan air yang bersih.</li>
+            <li>15. Menggosok gigi tidak perlu menggunakan pasta gigi (odol) ber-fluoride (odol yang rasanya mint dan terasa dingin setelah menggunakannya).</li>
+            <li>16. Susu, keju, yogurt dapat menguatkan gigi.</li>
+            <li>17. Setelah makan cokelat dan permen tidak perlu menggosok gigi.</li>
+            <li>18. Pemeriksaan gigi ke dokter gigi dilakukan jika gigi saya sakit saja.</li>
+            <li>19. Pemeriksaan gigi sebaiknya dilakukan setiap 6 bulan sekali.</li>
+        </ul>
+        <ul>
+            <li>BAGIAN 2</li>
+            <li>1. Saya pernah merasa sakit gigi.</li>
+            <li>2. Saya menggosok gigi jika disuruh oleh orang tua, jika tidak saya tidak menggosok gigi.</li>
+            <li>3. Saya menggosok gigi setelah makan.</li>
+            <li>4. Saya menggosok gigi sebelum tidur.</li>
+            <li>5. Saya memakai sikat gigi sendiri saat menggosok gigi. </li>
+            <li>6. Saya berkumur setelah makan.</li>
+            <li>7. Saat menggosok gigi, saya juga menggosok gusi dan lidah.</li>
+            <li>8. Saya menggosok gigi dengan lembut.</li>
+            <li>9. Saya menggosok gigi bagian depan dengan gerakkan ke atas dan ke bawah (naik turun)</li>
+            <li>10. Saya juga menggosok seluruh bagian gigi dengan gerakan memutar.</li>
+            <li>11. Saya menggosok seluruh bagian mulut (depan, belakang, sela-sela gigi).</li>
+            <li>12. Saya menggosok gigi menggunakan pasta gigi (odol) ber-fluoride (odol yang rasanya mint dan terasa dingin setelah menggunakannya).</li>
+            <li>13. Saya minum susu setiap hari.</li>
+            <li>14. Saya makan keju setiap hari.</li>
+            <li>15. Setelah makan permen, cokelat, roti, es krim, kemudian saya menggosok gigi.</li>
+            <li>16. Saya pernah periksa gigi ke dokter gigi.</li>
+            <li>17. Walaupun gigi saya tidak sakit, orang tua saya memeriksakan gigi saya ke dokter gigi (minimal 6 bulan sekali).</li>
+        </ul>
         
         '''.format(image_urls[0], *orang, image_urls[1], *results[1], image_urls[2], *results[2]), base_url=request.build_absolute_uri())
         css = CSS(string='@page { size: A4; margin: 1cm }')
