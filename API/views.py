@@ -766,29 +766,7 @@ class ManajerReportView(APIView):
             <li>Sedang: {}%</li>
             <li>Buruk: {}%</li>
         </ul>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
         <h1>Laporan Kuisioner</h1>
         <h3>BAGIAN 1 (Benar/Salah)</h3>
