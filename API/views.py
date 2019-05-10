@@ -698,6 +698,31 @@ class ManajerReportView(APIView):
             results.append(x)
         orang = [int(i) for i in results[0]]
 
+        jenis_survey = ['tf', 'range']
+        no_tf = [x+1 for x in range(19)]
+        no_range = [x+1 for x in range(17)]
+        for item in jenis_survey:
+            print(item)
+            if item == 'tf':
+                nums = no_tf
+                default_element = dict.fromkeys([x for x in range(2)],0)
+            else:
+                nums = no_range
+                default_element = dict.fromkeys([x for x in range(4)],0)
+            for number in nums:
+                answer_each_number = []
+                print("Soal: " + str(number)) 
+                queryset = JawabanSurvey.objects.filter(tipe=item).filter(no=number)
+                serializer = JawabanSurveySerializer(queryset, many=True)
+                for response in serializer.data:
+                    jawaban = list(response.values())[1]
+                    print("Jawaban: " + str(jawaban))
+                    answer_each_number.append(jawaban)          
+                counted = dict(Counter(answer_each_number))
+                result = {key: default_element.get(key, 0) + counted.get(key, 0) 
+                            for key in set(default_element) | set(counted)}
+                print(result)
+
         html = HTML(string='''
         <h1>Laporan Statistik</h1>
         
@@ -763,7 +788,7 @@ class ManajerReportView(APIView):
 
         <h1>Laporan Kuisioner</h1>
         <ul>
-            <li>BAGIAN 1</li>
+            <li>BAGIAN 1 (Benar/Salah)</li>
             <li>1. Gigi yang sehat adalah gigi yang bersih dan tidak berlubang</li>
             <li>2. Sakit gigi disebabkan karena malas menggosok gigi.</li>
             <li>3. Makan cokelat dan permen yang berlebihan dapat menyebabkan sakit gigi.</li>
@@ -785,7 +810,7 @@ class ManajerReportView(APIView):
             <li>19. Pemeriksaan gigi sebaiknya dilakukan setiap 6 bulan sekali.</li>
         </ul>
         <ul>
-            <li>BAGIAN 2</li>
+            <li>BAGIAN 2 (0-4)</li>
             <li>1. Saya pernah merasa sakit gigi.</li>
             <li>2. Saya menggosok gigi jika disuruh oleh orang tua, jika tidak saya tidak menggosok gigi.</li>
             <li>3. Saya menggosok gigi setelah makan.</li>
