@@ -15,6 +15,45 @@
     {{ rekamMedis.created_at }}
 </li>
 </ol>
+<p><strong>Pemeriksaan Awal</strong></p>
+<ol>
+    <li>Anamnesis: {{rekamMedis.anamnesa}}</li>
+    <li>Alergi: 
+        {% if rekamMedis.alergi != None %}
+            {{rekamMedis.alergi}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Riwayat Penyakit: 
+        {% if rekamMedis.riwayat_penyakit != None %}
+            {{rekamMedis.riwayat_penyakit}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Tekanan Darah: 
+        {% if rekamMedis.tekanan_darah != None %}
+            {{rekamMedis.tekanan_darah}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Berat: 
+        {% if rekamMedis.berat != None %}
+            {{rekamMedis.berat}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Tinggi: 
+        {% if rekamMedis.tinggi != None %}
+            {{rekamMedis.tinggi}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+</ol>
 <p><strong>Odontogram</strong></p>
 <table style="border-color: black; width: 600px;" border="1" cellspacing="0">
 <tbody>
@@ -80,7 +119,7 @@
 {% endfor %}
 </tbody>
 </table>
-<p>Total DI : {{di}}<br />Total CI : {{ci}}<br /><br />Kesimpulan : {{kondisi}}</p>
+<p>Total DI : {{di}}<br />Total CI : {{ci}}<br />Kesimpulan : {{kondisi}}</p>
 <p>Keterangan<br />0 - 1,2 Baik<br />1,3 - 3 Sedang<br />3,1 - 6 Buruk</p>
 <p><strong>Rekomendasi Pelayanan</strong></p>
 <ol>

@@ -508,7 +508,7 @@ class StatisticsView(APIView):
             all_gigi_plot = []
             for gigi in serializer.data:
                 status_gigi = list(gigi.values())[1:]
-                if status_gigi is not None:
+                if status_gigi !="":
                     all_gigi.append(status_gigi)
                     all_gigi_plot.append(status_gigi)
             print(all_gigi)
@@ -614,6 +614,13 @@ class PasienRekamMedisView(APIView):
     def get(self, request, format=None):
         pasien = Pasien.objects.get(user=request.user)
         queryset = pasien.rekammedis_set.all()
+        serializer = RekamMedisGetSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+
+class RekamMedisView(APIView):
+    def get(self, request, format=None):
+        queryset = RekamMedis.objects.all()
         serializer = RekamMedisGetSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
@@ -1140,8 +1147,8 @@ class RekamMedisPDFView(APIView):
         context = {'gigiSet': gigiSet,'rekamMedis':rekamMedis,'listPenanganan':listPenanganan, "kondisi":ohis.kondisi, "ci":ci, 'di':di}
         content = render_to_string('rekam-medis.html', context)
         html = HTML(string=content)
-        css = CSS(string='@page { size: A4; margin: 1cm } table td {border: 1px solid black}')
-        html.write_pdf('medis_test.pdf', stylesheets=[css])
+        css = CSS(string='@page { size: A4; margin: 2cm } table td {border: 1px solid black}')
+        html.write_pdf('rekam_medis/'+str(id)+'.pdf', stylesheets=[css])
         return Response("Sukses", status=status.HTTP_200_OK)
 
     

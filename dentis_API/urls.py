@@ -47,6 +47,7 @@ urlpatterns = [
     path('faqs/<int:id>/', views.FAQDetailView.as_view()),
     path('news/', views.NewsView.as_view()),
     path('pasien-rekam-medis/', views.PasienRekamMedisView.as_view()),
+    path('rekam-medis/', views.RekamMedisView.as_view()),
     path('pasien-profile/', views.PasienProfileView.as_view()),
     path('statistics/<str:tipe>/', views.StatisticsView.as_view()),
     path('statistics/<str:tipe>/<str:gender>/', views.StatisticsView.as_view()),
