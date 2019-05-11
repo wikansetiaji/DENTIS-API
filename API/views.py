@@ -1,5 +1,5 @@
 from django.shortcuts import render
-#from weasyprint import HTML, CSS
+from weasyprint import HTML, CSS
 from .serializers import *
 from django.contrib.auth import login as django_login, logout as django_logout
 from rest_framework import views, viewsets, filters, mixins, generics
@@ -28,6 +28,8 @@ from datetime import datetime, date
 import calendar
 from dateutil import tz
 import functools
+from django.template.loader import render_to_string
+
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -736,6 +738,10 @@ class ManajerReportView(APIView):
             results.append(x)
         orang = [int(i) for i in results[0]]
 
+        print(results[1])
+
+        print(image_urls)
+
         jenis_survey = ['tf', 'range']
         no_tf = [x+1 for x in range(19)]
         no_range = [x+1 for x in range(17)]
@@ -763,6 +769,8 @@ class ManajerReportView(APIView):
                 ## Dictionary Items To List
                 all_result.append(list(functools.reduce(lambda x, y: x + y, result.items())))
         flat_list = [item for sublist in all_result for item in sublist]
+
+        print(flat_list)
 
         html = HTML(string='''
         <h1>Laporan Statistik</h1>
@@ -1076,8 +1084,6 @@ class JadwalPraktekAvailableView(APIView):
         serializers.is_valid()
         return Response(serializers.data)
 
-
-
 class JawabanSurveyView(APIView):
     def post(self, request, format=None):
         serializer = JawabanSurveyListSerializer(data=request.data)
@@ -1093,5 +1099,48 @@ class JawabanSurveyView(APIView):
             )
             jawabanSurvey.save()
         return Response(serializer.data)
+
+class RekamMedisPDFView(APIView):
+    def get(self, request, id, format=None):
+        rekamMedis = RekamMedis.objects.get(id=id)
+        gigiSet = Gigi.objects.filter(rekam_medis=rekamMedis)
+
+        ci=0
+        di=0
+
+        for gigi in gigiSet:
+            if (gigi.ci!=None):
+                ci+=gigi.ci
+            if (gigi.di!=None):
+                di+=gigi.di
+        
+        ci = ci/6
+        di = di/6
+
+        listPenanganan = []
+        if rekamMedis.penanganan.dhe:
+            listPenanganan.append("DHE")
+        if rekamMedis.penanganan.cpp_acp:
+            listPenanganan.append("Aplikasi CPP ACP")
+        if rekamMedis.penanganan.sp:
+            listPenanganan.append("Surface Protection")
+        if rekamMedis.penanganan.fs:
+            listPenanganan.append("Fissure Sealant")
+        if rekamMedis.penanganan.art:
+            listPenanganan.append("Penambahan Art")
+        if rekamMedis.penanganan.eks:
+            listPenanganan.append("Pencabutan / Ekstraksi")
+        if rekamMedis.penanganan.lainnya!="":
+            listPenanganan.append(rekamMedis.penanganan.lainnya)
+        
+        ohis = OHIS.objects.get(rekam_medis=rekamMedis)
+        print(ohis)
+
+        context = {'gigiSet': gigiSet,'rekamMedis':rekamMedis,'listPenanganan':listPenanganan, "kondisi":ohis.kondisi, "ci":ci, 'di':di}
+        content = render_to_string('rekam-medis.html', context)
+        html = HTML(string=content)
+        css = CSS(string='@page { size: A4; margin: 1cm } table td {border: 1px solid black}')
+        html.write_pdf('medis_test.pdf', stylesheets=[css])
+        return Response("Sukses", status=status.HTTP_200_OK)
 
     
