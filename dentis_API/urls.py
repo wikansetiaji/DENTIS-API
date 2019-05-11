@@ -53,10 +53,11 @@ urlpatterns = [
     path('appointment/<int:id>/', views.AppointmentsView.as_view()),
     path('appointment-detail/<int:id>/', views.AppointmentDetailView.as_view()),
     path('appointment-pasien/', views.AppointmentPasienView.as_view()),
+    path('appointment-dokter/', views.AppointmentDokterView.as_view()),
+    path('jadwal-praktek-now/', views.JadwalPraktekNowView.as_view()),
     path('appointment/choose/', views.AppointmentAvailableView.as_view()),
     path('jadwal-available/', views.JadwalPraktekAvailableView.as_view()),
     path('survey/', views.JawabanSurveyView.as_view()),
-    path('jenis-penanganan/', views.JenisPenangananView.as_view()),
     path('report/manajer', views.ManajerReportView.as_view()),
     url(r'^logout/',views.LogoutView.as_view({'post':'post'})),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

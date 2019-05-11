@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from weasyprint import HTML, CSS
+#from weasyprint import HTML, CSS
 from .serializers import *
 from django.contrib.auth import login as django_login, logout as django_logout
 from rest_framework import views, viewsets, filters, mixins, generics
@@ -308,20 +308,29 @@ class PemeriksaanAwalView(viewsets.ViewSet):
                 pass
 
             try:
-                tekanan_darah = serializer.data["tekananDarah"]
+                tekanan_darah = float(serializer.data["tekananDarah"])
             except:
                 pass
 
             try:
-                berat = serializer.data["berat"]
+                berat = float(serializer.data["berat"])
             except:
                 pass
             
             try:
-                tinggi = serializer.data["tinggi"]
+                tinggi = float(serializer.data["tinggi"])
             except:
                 pass
-
+            penanganan = Penanganan(
+                dhe = serializer.data["penanganan"]["dhe"],
+                cpp_acp = serializer.data["penanganan"]["cpp_acp"],
+                sp = serializer.data["penanganan"]["sp"],
+                fs = serializer.data["penanganan"]["fs"],
+                art = serializer.data["penanganan"]["art"],
+                eks = serializer.data["penanganan"]["eks"],
+                lainnya = serializer.data["penanganan"]["lainnya"],
+            )
+            penanganan.save()
             rekamMedis = RekamMedis(
                 anamnesa = serializer.data["anamnesa"],
                 pasien = Pasien.objects.get(id=serializer.data["idPasien"]),
@@ -331,9 +340,18 @@ class PemeriksaanAwalView(viewsets.ViewSet):
                 tekanan_darah = tekanan_darah,
                 berat = berat,
                 tinggi = tinggi,
+                penanganan=penanganan
             )
             rekamMedis.save()
-            return Response({"id":rekamMedis.id, "data":serializer.data}, status=status.HTTP_201_CREATED)
+            try:
+                print("kena")
+                appointment = Appointment.objects.get(id=serializer.data["idAppointment"])
+                appointment.rekam_medis=rekamMedis
+                appointment.save()
+            except:
+                pass
+
+            return Response({"id":rekamMedis.id, "data":serializer.data,"idDokter":request.user.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class OdontogramView(viewsets.ViewSet):
@@ -603,10 +621,21 @@ class PasienProfileView(APIView):
         print(pasien)
         return Response(serializer.data)
 
+class JadwalPraktekNowView(APIView):
+    def get(self, request, format=None):    
+        jadwalPraktek = JadwalPraktek(
+            waktu_mulai = timezone.now(),
+            waktu_selesai = timezone.now(),
+            no_ruangan = 0
+        )
+        serializer = JadwalPraktekGetSerializer(jadwalPraktek)
+        jadwalPraktek.save()
+        return Response(serializer.data)
+
 class AppointmentsView(APIView):
     def get(self, request, id, format=None):
         pasien = Pasien.objects.get(id=id)
-        queryset = pasien.appointment_set.all()
+        queryset = pasien.appointment_set.order_by('-jadwal__waktu_mulai').filter(rekam_medis__isnull=True)
         serializer = AppointmentSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
@@ -649,10 +678,18 @@ class AppointmentDetailView(APIView):
         #serializer = PasienDeleteSerializer(pasien)
         return Response(status=status.HTTP_200_OK)
 
+class AppointmentDokterView(APIView):
+    def get(self, request, format=None):
+        dokter = Dokter.objects.get(user=request.user)
+        queryset = dokter.appointment_set.order_by('-jadwal__waktu_mulai').filter(rekam_medis__isnull=True)
+        serializer = AppointmentSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+
 class AppointmentPasienView(APIView):
     def get(self, request, format=None):
         pasien = Pasien.objects.get(user=request.user)
-        queryset = pasien.appointment_set.all()
+        queryset = pasien.appointment_set.order_by('-jadwal__waktu_mulai').filter(rekam_medis__isnull=True)
         serializer = AppointmentSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
@@ -750,12 +787,7 @@ class JadwalPraktekAvailableView(APIView):
         serializers.is_valid()
         return Response(serializers.data)
 
-class JenisPenangananView(APIView):
-    def get(self, request, format=None):
-        queryset = JenisPenanganan.objects.all()
-        serializers = JenisPenangananSerializer(data=queryset, many=True)
-        serializers.is_valid()
-        return Response(serializers.data)
+
 
 class JawabanSurveyView(APIView):
     def post(self, request, format=None):
