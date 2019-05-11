@@ -27,6 +27,7 @@ from rest_framework.parsers import FileUploadParser
 from datetime import datetime, date
 import calendar
 from dateutil import tz
+import functools
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -735,6 +736,34 @@ class ManajerReportView(APIView):
             results.append(x)
         orang = [int(i) for i in results[0]]
 
+        jenis_survey = ['tf', 'range']
+        no_tf = [x+1 for x in range(19)]
+        no_range = [x+1 for x in range(17)]
+        all_result = []
+        for item in jenis_survey:
+            if item == 'tf':
+                nums = no_tf
+                default_element = dict.fromkeys([x for x in range(2)],0)
+            else:
+                nums = no_range
+                default_element = dict.fromkeys([x for x in range(4)],0)
+            for number in nums:
+                answer_each_number = []
+                queryset = JawabanSurvey.objects.filter(tipe=item).filter(no=number)
+                serializer = JawabanSurveySerializer(queryset, many=True)
+                for response in serializer.data:
+                    jawaban = list(response.values())[1]
+                    answer_each_number.append(jawaban)          
+                counted = dict(Counter(answer_each_number))
+                result = {key: default_element.get(key, 0) + counted.get(key, 0) 
+                            for key in set(default_element) | set(counted)}
+                if item == 'tf':
+                    result['Salah'] = result.pop(0)
+                    result['Benar'] = result.pop(1)
+                ## Dictionary Items To List
+                all_result.append(list(functools.reduce(lambda x, y: x + y, result.items())))
+        flat_list = [item for sublist in all_result for item in sublist]
+
         html = HTML(string='''
         <h1>Laporan Statistik</h1>
         
@@ -774,8 +803,268 @@ class ManajerReportView(APIView):
             <li>Sedang: {}%</li>
             <li>Buruk: {}%</li>
         </ul>
+            <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+        <h1>Laporan Kuisioner</h1>
+        <h3>BAGIAN 1 (Benar/Salah)</h3>
+        <ul>
+            <li>1. Gigi yang sehat adalah gigi yang bersih dan tidak berlubang.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>2. Sakit gigi disebabkan karena malas menggosok gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>3. Makan cokelat dan permen yang berlebihan dapat menyebabkan sakit gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>4. Sakit gigi dapat menyebabkan sakit kepala, bau mulut, dan sulit untuk tidur.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>5. Gigi berlubah merupakan salah satu masalah kesehatan gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>6. Menggosok gigi minimal 2 kali sehari setelah makan dan sebelum tidur.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>7. Menggosok gigi cukup dilakukan saat mandi pagi dan sore hari.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>8. Sikat gigi yang benar adalah yang ujung sikatnya kecil dan pipih sehingga dapat menjangkau bagian belakang gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>9. Sikat gigi tidak perlu diganti secara rutin.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>10. Satu sikat gigi boleh dipakai oleh banyak orang (ayah. ibu, kakak, adik).
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>11. Menggosok gigi sebaiknya dilakukan dengan lembut.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>12. Saat menggosok gigi permukaan gusi dan lidah tidak perlu disikat.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>13. Menggosok gigi yang benar adalah menggosok seluruh bagian gigi (depan, belakang, sela-sela gigi).
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>14. Setelah menggosok gigi tidak harus berkumur dengan air yang bersih.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>15. Menggosok gigi tidak perlu menggunakan pasta gigi (odol) ber-fluoride (odol yang rasanya mint dan terasa dingin setelah menggunakannya).
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>16. Susu, keju, yogurt dapat menguatkan gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>17. Setelah makan cokelat dan permen tidak perlu menggosok gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>18. Pemeriksaan gigi ke dokter gigi dilakukan jika gigi saya sakit saja.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>19. Pemeriksaan gigi sebaiknya dilakukan setiap 6 bulan sekali.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+        </ul>
+        <br><br><br><br><br><br><br><br><br><br>
+        <h3>BAGIAN 2 (0-3)</h3>
+        <ul>
+            <li>1. Saya pernah merasa sakit gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>2. Saya menggosok gigi jika disuruh oleh orang tua, jika tidak saya tidak menggosok gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>3. Saya menggosok gigi setelah makan.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>4. Saya menggosok gigi sebelum tidur.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>5. Saya memakai sikat gigi sendiri saat menggosok gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>6. Saya berkumur setelah makan.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>7. Saat menggosok gigi, saya juga menggosok gusi dan lidah.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>8. Saya menggosok gigi dengan lembut.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>9. Saya menggosok gigi bagian depan dengan gerakkan ke atas dan ke bawah (naik turun)
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>10. Saya juga menggosok seluruh bagian gigi dengan gerakan memutar.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>11. Saya menggosok seluruh bagian mulut (depan, belakang, sela-sela gigi).
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>12. Saya menggosok gigi menggunakan pasta gigi (odol) ber-fluoride (odol yang rasanya mint dan terasa dingin setelah menggunakannya).
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>13. Saya minum susu setiap hari.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>14. Saya makan keju setiap hari.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>15. Setelah makan permen, cokelat, roti, es krim, kemudian saya menggosok gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>16. Saya pernah periksa gigi ke dokter gigi.
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+            <li>17. Walaupun gigi saya tidak sakit, orang tua saya memeriksakan gigi saya ke dokter gigi (minimal 6 bulan sekali).
+            <br>
+            Jawaban: <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            {}: {} orang <br>
+            <br></li>
+        </ul>
         
-        '''.format(image_urls[0], *orang, image_urls[1], *results[1], image_urls[2], *results[2]), base_url=request.build_absolute_uri())
+        '''.format(image_urls[0], *orang, image_urls[1], *results[1], image_urls[2], *results[2], *flat_list), base_url=request.build_absolute_uri())
         css = CSS(string='@page { size: A4; margin: 1cm }')
         html.write_pdf('manajer_report.pdf', stylesheets=[css])
         return Response("Sukses", status=status.HTTP_200_OK)
