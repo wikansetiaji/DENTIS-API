@@ -508,9 +508,10 @@ class StatisticsView(APIView):
             all_gigi_plot = []
             for gigi in serializer.data:
                 status_gigi = list(gigi.values())[1:]
-                all_gigi.append(status_gigi)
-                all_gigi_plot.append(status_gigi)
-
+                if status_gigi is not None:
+                    all_gigi.append(status_gigi)
+                    all_gigi_plot.append(status_gigi)
+            print(all_gigi)
             all_gigi = np.hstack(np.array(all_gigi))
             all_gigi_plot = np.hstack(np.array(all_gigi_plot))
             element = Counter(all_gigi).keys() 
