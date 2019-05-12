@@ -53,6 +53,15 @@ class Statistics(models.Model):
     tipe = models.CharField(max_length=255, null=False)
     result = models.CharField(max_length=255, null=False)
 
+class Penanganan(models.Model):
+    dhe = models.BooleanField(default=False)
+    cpp_acp = models.BooleanField(default=False)
+    sp = models.BooleanField(default=False)
+    fs = models.BooleanField(default=False)
+    art = models.BooleanField(default=False)
+    eks = models.BooleanField(default=False)
+    lainnya = models.CharField(max_length=255, null=True)
+
 class RekamMedis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     anamnesa = models.CharField(max_length=255, null=False)
@@ -63,6 +72,7 @@ class RekamMedis(models.Model):
     tinggi = models.FloatField(null=True)
     pasien = models.ForeignKey(Pasien, on_delete=models.CASCADE)
     dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE)
+    penanganan = models.OneToOneField(Penanganan, on_delete=models.CASCADE, null=True)
 
 class Gigi(models.Model):
     rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)
@@ -92,16 +102,8 @@ class Appointment(models.Model):
     is_booked = models.BooleanField(default=False)
     pasien = models.ForeignKey(Pasien, on_delete=models.CASCADE, null=True)
     dokter = models.ForeignKey(Dokter, on_delete=models.CASCADE, null=True)
-    rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE, null=True)
+    rekam_medis = models.OneToOneField(RekamMedis, on_delete=models.CASCADE, null=True)
     jadwal = models.ForeignKey(JadwalPraktek, on_delete=models.CASCADE)
-
-class JenisPenanganan(models.Model):
-    nama = models.CharField(null=False, max_length=255)
-    harga = models.IntegerField(null=False)
-
-class Penanganan(models.Model):
-    jenis_penanganan = models.ForeignKey(JenisPenanganan, on_delete=models.CASCADE)
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
 
 class JawabanSurvey(models.Model):
     no = models.IntegerField(null=False)

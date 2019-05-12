@@ -28,6 +28,8 @@ from datetime import datetime, date
 import calendar
 from dateutil import tz
 import functools
+from django.template.loader import render_to_string
+
 
 class DokterLoginView(viewsets.ViewSet):
     def post(self, request):
@@ -309,20 +311,29 @@ class PemeriksaanAwalView(viewsets.ViewSet):
                 pass
 
             try:
-                tekanan_darah = serializer.data["tekananDarah"]
+                tekanan_darah = float(serializer.data["tekananDarah"])
             except:
                 pass
 
             try:
-                berat = serializer.data["berat"]
+                berat = float(serializer.data["berat"])
             except:
                 pass
             
             try:
-                tinggi = serializer.data["tinggi"]
+                tinggi = float(serializer.data["tinggi"])
             except:
                 pass
-
+            penanganan = Penanganan(
+                dhe = serializer.data["penanganan"]["dhe"],
+                cpp_acp = serializer.data["penanganan"]["cpp_acp"],
+                sp = serializer.data["penanganan"]["sp"],
+                fs = serializer.data["penanganan"]["fs"],
+                art = serializer.data["penanganan"]["art"],
+                eks = serializer.data["penanganan"]["eks"],
+                lainnya = serializer.data["penanganan"]["lainnya"],
+            )
+            penanganan.save()
             rekamMedis = RekamMedis(
                 anamnesa = serializer.data["anamnesa"],
                 pasien = Pasien.objects.get(id=serializer.data["idPasien"]),
@@ -332,9 +343,18 @@ class PemeriksaanAwalView(viewsets.ViewSet):
                 tekanan_darah = tekanan_darah,
                 berat = berat,
                 tinggi = tinggi,
+                penanganan=penanganan
             )
             rekamMedis.save()
-            return Response({"id":rekamMedis.id, "data":serializer.data}, status=status.HTTP_201_CREATED)
+            try:
+                print("kena")
+                appointment = Appointment.objects.get(id=serializer.data["idAppointment"])
+                appointment.rekam_medis=rekamMedis
+                appointment.save()
+            except:
+                pass
+
+            return Response({"id":rekamMedis.id, "data":serializer.data,"idDokter":request.user.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class OdontogramView(viewsets.ViewSet):
@@ -488,6 +508,7 @@ class StatisticsView(APIView):
             all_gigi_plot = []
             for gigi in serializer.data:
                 status_gigi = list(gigi.values())[1:]
+<<<<<<< HEAD
                 status_gigi.insert(len(status_gigi), None)
                 status_gigi.insert(len(status_gigi), None)
                 print(status_gigi)
@@ -496,6 +517,11 @@ class StatisticsView(APIView):
                 all_gigi.append(status_gigi)
                 all_gigi_plot.append(status_gigi)
 
+=======
+                if status_gigi !="":
+                    all_gigi.append(status_gigi)
+                    all_gigi_plot.append(status_gigi)
+>>>>>>> 602cfd8e623140524f5b194abb0769212f9922dc
             print(all_gigi)
             all_gigi = np.hstack(np.array(all_gigi))
             all_gigi_plot = np.hstack(np.array(all_gigi_plot))
@@ -603,6 +629,13 @@ class PasienRekamMedisView(APIView):
         serializer.is_valid()
         return Response(serializer.data)
 
+class RekamMedisView(APIView):
+    def get(self, request, format=None):
+        queryset = RekamMedis.objects.all()
+        serializer = RekamMedisGetSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+
 class PasienProfileView(APIView):
     def get(self, request, format=None):
         pasien = Pasien.objects.get(user=request.user)
@@ -610,10 +643,21 @@ class PasienProfileView(APIView):
         print(pasien)
         return Response(serializer.data)
 
+class JadwalPraktekNowView(APIView):
+    def get(self, request, format=None):    
+        jadwalPraktek = JadwalPraktek(
+            waktu_mulai = timezone.now(),
+            waktu_selesai = timezone.now(),
+            no_ruangan = 0
+        )
+        serializer = JadwalPraktekGetSerializer(jadwalPraktek)
+        jadwalPraktek.save()
+        return Response(serializer.data)
+
 class AppointmentsView(APIView):
     def get(self, request, id, format=None):
         pasien = Pasien.objects.get(id=id)
-        queryset = pasien.appointment_set.all()
+        queryset = pasien.appointment_set.order_by('-jadwal__waktu_mulai').filter(rekam_medis__isnull=True)
         serializer = AppointmentSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
@@ -656,10 +700,18 @@ class AppointmentDetailView(APIView):
         #serializer = PasienDeleteSerializer(pasien)
         return Response(status=status.HTTP_200_OK)
 
+class AppointmentDokterView(APIView):
+    def get(self, request, format=None):
+        dokter = Dokter.objects.get(user=request.user)
+        queryset = dokter.appointment_set.order_by('-jadwal__waktu_mulai').filter(rekam_medis__isnull=True)
+        serializer = AppointmentSerializer(data=queryset, many=True)
+        serializer.is_valid()
+        return Response(serializer.data)
+
 class AppointmentPasienView(APIView):
     def get(self, request, format=None):
         pasien = Pasien.objects.get(user=request.user)
-        queryset = pasien.appointment_set.all()
+        queryset = pasien.appointment_set.order_by('-jadwal__waktu_mulai').filter(rekam_medis__isnull=True)
         serializer = AppointmentSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
@@ -705,6 +757,10 @@ class ManajerReportView(APIView):
             results.append(x)
         orang = [int(i) for i in results[0]]
 
+        print(results[1])
+
+        print(image_urls)
+
         jenis_survey = ['tf', 'range']
         no_tf = [x+1 for x in range(19)]
         no_range = [x+1 for x in range(17)]
@@ -732,6 +788,8 @@ class ManajerReportView(APIView):
                 ## Dictionary Items To List
                 all_result.append(list(functools.reduce(lambda x, y: x + y, result.items())))
         flat_list = [item for sublist in all_result for item in sublist]
+
+        print(flat_list)
 
         html = HTML(string='''
         <h1>Laporan Statistik</h1>
@@ -1045,13 +1103,6 @@ class JadwalPraktekAvailableView(APIView):
         serializers.is_valid()
         return Response(serializers.data)
 
-class JenisPenangananView(APIView):
-    def get(self, request, format=None):
-        queryset = JenisPenanganan.objects.all()
-        serializers = JenisPenangananSerializer(data=queryset, many=True)
-        serializers.is_valid()
-        return Response(serializers.data)
-
 class JawabanSurveyView(APIView):
     def post(self, request, format=None):
         serializer = JawabanSurveyListSerializer(data=request.data)
@@ -1067,5 +1118,48 @@ class JawabanSurveyView(APIView):
             )
             jawabanSurvey.save()
         return Response(serializer.data)
+
+class RekamMedisPDFView(APIView):
+    def get(self, request, id, format=None):
+        rekamMedis = RekamMedis.objects.get(id=id)
+        gigiSet = Gigi.objects.filter(rekam_medis=rekamMedis)
+
+        ci=0
+        di=0
+
+        for gigi in gigiSet:
+            if (gigi.ci!=None):
+                ci+=gigi.ci
+            if (gigi.di!=None):
+                di+=gigi.di
+        
+        ci = ci/6
+        di = di/6
+
+        listPenanganan = []
+        if rekamMedis.penanganan.dhe:
+            listPenanganan.append("DHE")
+        if rekamMedis.penanganan.cpp_acp:
+            listPenanganan.append("Aplikasi CPP ACP")
+        if rekamMedis.penanganan.sp:
+            listPenanganan.append("Surface Protection")
+        if rekamMedis.penanganan.fs:
+            listPenanganan.append("Fissure Sealant")
+        if rekamMedis.penanganan.art:
+            listPenanganan.append("Penambahan Art")
+        if rekamMedis.penanganan.eks:
+            listPenanganan.append("Pencabutan / Ekstraksi")
+        if rekamMedis.penanganan.lainnya!="":
+            listPenanganan.append(rekamMedis.penanganan.lainnya)
+        
+        ohis = OHIS.objects.get(rekam_medis=rekamMedis)
+        print(ohis)
+
+        context = {'gigiSet': gigiSet,'rekamMedis':rekamMedis,'listPenanganan':listPenanganan, "kondisi":ohis.kondisi, "ci":ci, 'di':di}
+        content = render_to_string('rekam-medis.html', context)
+        html = HTML(string=content)
+        css = CSS(string='@page { size: A4; margin: 2cm } table td {border: 1px solid black}')
+        html.write_pdf('rekam_medis/'+str(id)+'.pdf', stylesheets=[css])
+        return Response("Sukses", status=status.HTTP_200_OK)
 
     

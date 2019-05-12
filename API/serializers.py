@@ -4,6 +4,7 @@ import traceback
 from rest_framework.utils import model_meta
 from django.core.validators import validate_email as validate_email_validators
 from .models import *
+from django.utils import timezone
 
 class DokterLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
@@ -517,14 +518,25 @@ class StatisticsSerializerURL(serializers.Serializer):
     tipe = serializers.CharField()
     result = serializers.ListField()
 
+class PenangananSerializer(serializers.Serializer):
+    dhe = serializers.BooleanField()
+    cpp_acp = serializers.BooleanField()
+    sp = serializers.BooleanField()
+    fs = serializers.BooleanField()
+    art = serializers.BooleanField()
+    eks = serializers.BooleanField()
+    lainnya = serializers.CharField(required=False,allow_blank=True)
+
 class PemeriksaanAwalPostSerializer(serializers.Serializer):
     anamnesa = serializers.CharField()
-    alergi = serializers.CharField(required=False)
-    riwayat_penyakit = serializers.CharField(required=False)
-    tekanan_darah = serializers.CharField(required=False)
-    berat = serializers.CharField(required=False)
-    tinggi = serializers.CharField(required=False)
+    alergi = serializers.CharField(required=False,allow_blank=True)
+    riwayat_penyakit = serializers.CharField(required=False,allow_blank=True)
+    tekanan_darah = serializers.CharField(required=False,allow_blank=True)
+    berat = serializers.CharField(required=False,allow_blank=True)
+    tinggi = serializers.CharField(required=False,allow_blank=True)
     idPasien = serializers.CharField()
+    idAppointment = serializers.CharField(required=False)
+    penanganan = PenangananSerializer()
 
     def validate(self, data):
         anamnesa = data.get("anamnesa", "")
@@ -588,12 +600,13 @@ class RekamMedisGetSerializer(serializers.ModelSerializer):
     fotorontgen_set = FotoRontgenGetSerializer(many=True)
     dokter = DokterGetSerializer()
     pasien = PasienGetSerializer()
+    penanganan = PenangananSerializer()
     class Meta:
         model = RekamMedis
-        fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set',)
+        fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set','penanganan')
 
 class JadwalPraktekGetSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=False)
     waktu_mulai = serializers.DateTimeField()
     waktu_selesai = serializers.DateTimeField()
     no_ruangan = serializers.IntegerField()
@@ -605,6 +618,10 @@ class AppointmentSerializer(serializers.Serializer):
     dokter = DokterGetSerializer()
     rekam_medis = RekamMedisGetSerializer()
     jadwal = JadwalPraktekGetSerializer()
+    is_active = serializers.SerializerMethodField()
+
+    def get_is_active(self, obj):
+        return (obj.jadwal.waktu_mulai>timezone.now())
 
 class AppointmentPostSerializer(serializers.Serializer):
     is_booked = serializers.BooleanField()
@@ -612,11 +629,6 @@ class AppointmentPostSerializer(serializers.Serializer):
     idDokter = serializers.CharField(required=False)
     idRekamMedis = serializers.CharField(required=False)
     idJadwal = serializers.CharField()
-
-class JenisPenangananSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    nama = serializers.CharField()
-    harga = serializers.IntegerField()
 
 class JawabanSurveySerializer(serializers.Serializer):
     no = serializers.IntegerField()

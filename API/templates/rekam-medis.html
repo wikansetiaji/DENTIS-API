@@ -1,0 +1,129 @@
+<p style="text-align: center;"><strong>HASIL PEMERIKSAAN {{ some_key }}</strong></p>
+<p><br /><br /><strong>Data Umum</strong></p>
+<ol>
+<li>Nama Dokter: {{rekamMedis.dokter.nama}}</li>
+<li>Nama Pasien: {{rekamMedis.pasien.nama}}</li>
+<li>Jenis Kelamin: 
+    {% if rekamMedis.pasien.jenisKelamin == "l" %}
+        Laki-laki
+    {% endif %}
+    {% if rekamMedis.pasien.jenisKelamin == "p" %}
+        Perempuan
+    {% endif %}
+</li>
+<li>Tanggal Pemeriksaan: 
+    {{ rekamMedis.created_at }}
+</li>
+</ol>
+<p><strong>Pemeriksaan Awal</strong></p>
+<ol>
+    <li>Anamnesis: {{rekamMedis.anamnesa}}</li>
+    <li>Alergi: 
+        {% if rekamMedis.alergi != None %}
+            {{rekamMedis.alergi}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Riwayat Penyakit: 
+        {% if rekamMedis.riwayat_penyakit != None %}
+            {{rekamMedis.riwayat_penyakit}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Tekanan Darah: 
+        {% if rekamMedis.tekanan_darah != None %}
+            {{rekamMedis.tekanan_darah}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Berat: 
+        {% if rekamMedis.berat != None %}
+            {{rekamMedis.berat}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+    <li>Tinggi: 
+        {% if rekamMedis.tinggi != None %}
+            {{rekamMedis.tinggi}}
+        {% else %}
+            -
+        {% endif %}
+    </li>
+</ol>
+<p><strong>Odontogram</strong></p>
+<table style="border-color: black; width: 600px;" border="1" cellspacing="0">
+<tbody>
+<tr style="height: 18px;">
+<td style="width: 100px; height: 18px; text-align: center;">Kode Gigi</td>
+<td style="width: 100px; height: 18px; text-align: center;">Mesial</td>
+<td style="width: 100px; height: 18px; text-align: center;">Occusal</td>
+<td style="width: 100px; height: 18px; text-align: center;">Distal</td>
+<td style="width: 100px; height: 18px; text-align: center;">Vestibular</td>
+<td style="width: 100px; height: 18px; text-align: center;">Lingual</td>
+</tr>
+{% for gigi in gigiSet  %}
+    <tr style="height: 18px;">
+        <td style="width: 100px; height: 18px; text-align: center;">{{gigi.kode}}</td>
+        <td style="width: 100px; height: 18px; text-align: center;">
+        {% if gigi.m != -1 %}
+                {{gigi.m}}
+            {% endif %}     
+        </td>
+        <td style="width: 100px; height: 18px; text-align: center;">
+            {% if gigi.o == None %}
+                X
+            {% elif gigi.o != -1 %}
+                {{gigi.o}}
+            {% endif %}       
+        </td>
+        <td style="width: 100px; height: 18px; text-align: center;">
+        {% if gigi.d != -1 %}
+                {{gigi.d}}
+            {% endif %}     
+        </td>
+        <td style="width: 100px; height: 18px; text-align: center;">
+            {% if gigi.v != -1 %}
+                {{gigi.v}}
+            {% endif %}     
+        </td>
+        <td style="width: 100px; height: 18px; text-align: center;">
+        {% if gigi.l != -1 %}
+                {{gigi.l}}
+            {% endif %}     
+        </td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+<p>Keterangan :<br />0 = Sound<br />1 = Caries<br />2 = Filled with caries<br />3 = Filled, no caries<br />4 = Missing due to caries<br />5 = Missing for another reason<br />6 = Fissure sealant<br />7 = Fix dental prosthesis/ crown, abutment, veneer<br />8 = Unerupted<br />9 = Persistance<br />10 = Whitespot</p>
+<p><strong>OHIS</strong></p>
+<table style="width: 600px; border-color: black;" border="1" cellspacing="0">
+<tbody>
+<tr>
+<td style="width: 200px; text-align: center;">&nbsp;Kode Gigi</td>
+<td style="width: 200px; text-align: center;">DI&nbsp;</td>
+<td style="width: 200px; text-align: center;">CI&nbsp;</td>
+</tr>
+{% for gigi in gigiSet  %}
+    {% if gigi.kode == "11" or gigi.kode == "16" or gigi.kode == "21" or gigi.kode == "31" or gigi.kode == "36"  or gigi.kode == "46"  %}
+        <tr>
+        <td style="width: 200px; text-align: center;">{{gigi.kode}}</td>
+        <td style="width: 200px; text-align: center;">{{gigi.di}}</td>
+        <td style="width: 200px; text-align: center;">{{gigi.ci}}</td>
+        </tr>
+    {% endif %}
+{% endfor %}
+</tbody>
+</table>
+<p>Total DI : {{di}}<br />Total CI : {{ci}}<br />Kesimpulan : {{kondisi}}</p>
+<p>Keterangan<br />0 - 1,2 Baik<br />1,3 - 3 Sedang<br />3,1 - 6 Buruk</p>
+<p><strong>Rekomendasi Pelayanan</strong></p>
+<ol>
+{% for penanganan in listPenanganan  %}
+    <li>{{penanganan}}</li>
+{% endfor %}
+</ol>
