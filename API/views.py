@@ -508,20 +508,12 @@ class StatisticsView(APIView):
             all_gigi_plot = []
             for gigi in serializer.data:
                 status_gigi = list(gigi.values())[1:]
-<<<<<<< HEAD
-                status_gigi.insert(len(status_gigi), None)
-                status_gigi.insert(len(status_gigi), None)
                 print(status_gigi)
                 status_gigi = [x for x in status_gigi if x is not None]
                 print(status_gigi)
                 all_gigi.append(status_gigi)
                 all_gigi_plot.append(status_gigi)
 
-=======
-                if status_gigi !="":
-                    all_gigi.append(status_gigi)
-                    all_gigi_plot.append(status_gigi)
->>>>>>> 602cfd8e623140524f5b194abb0769212f9922dc
             print(all_gigi)
             all_gigi = np.hstack(np.array(all_gigi))
             all_gigi_plot = np.hstack(np.array(all_gigi_plot))
