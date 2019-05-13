@@ -91,7 +91,7 @@ class OHIS(models.Model):
 
 class FotoRontgen(models.Model):
     rekam_medis = models.ForeignKey(RekamMedis, on_delete=models.CASCADE)
-    foto = models.ImageField()
+    foto = models.ImageField(upload_to='rontgents')
 
 class JadwalPraktek(models.Model):
     waktu_mulai = models.DateTimeField(null=False)

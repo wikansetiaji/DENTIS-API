@@ -636,8 +636,10 @@ class PasienProfileView(APIView):
         return Response(serializer.data)
 
 class JadwalPraktekNowView(APIView):
-    def get(self, request, format=None):    
+    def get(self, request, format=None):   
+        max_id = JadwalPraktek.objects.all().order_by("-id")[0].id+1
         jadwalPraktek = JadwalPraktek(
+            id=max_id,
             waktu_mulai = timezone.now(),
             waktu_selesai = timezone.now(),
             no_ruangan = 0
@@ -777,6 +779,11 @@ class ManajerReportView(APIView):
                 if item == 'tf':
                     result['Salah'] = result.pop(0)
                     result['Benar'] = result.pop(1)
+                if item == 'range':
+                    result['Tidak pernah'] = result.pop(0)
+                    result['Kadang kadang'] = result.pop(1)
+                    result['Sering'] = result.pop(2)
+                    result['Selalu'] = result.pop(3)
                 ## Dictionary Items To List
                 all_result.append(list(functools.reduce(lambda x, y: x + y, result.items())))
         flat_list = [item for sublist in all_result for item in sublist]
@@ -1090,7 +1097,7 @@ class ManajerReportView(APIView):
 
 class JadwalPraktekAvailableView(APIView):
     def get(self, request, format=None):
-        queryset = JadwalPraktek.objects.filter(appointment__isnull=True)
+        queryset = JadwalPraktek.objects.order_by("id").filter(appointment__isnull=True)
         serializers = JadwalPraktekGetSerializer(data=queryset, many=True)
         serializers.is_valid()
         return Response(serializers.data)

@@ -36,6 +36,7 @@ __pycache__/
 .staticfiles
 env/
 charts/
+rontgents/
 build/
 develop-eggs/
 dist/
