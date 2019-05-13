@@ -35,6 +35,7 @@ __pycache__/
 .Python
 .staticfiles
 env/
+rekam_medis/
 charts/
 rontgents/
 build/

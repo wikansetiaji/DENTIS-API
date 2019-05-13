@@ -67,7 +67,7 @@ class RekamMedis(models.Model):
     anamnesa = models.CharField(max_length=255, null=False)
     alergi = models.CharField(max_length=255, null=True)
     riwayat_penyakit = models.CharField(max_length=255, null=True)
-    tekanan_darah = models.FloatField(null=True)
+    tekanan_darah = models.CharField(max_length=255, null=True)
     berat = models.FloatField(null=True)
     tinggi = models.FloatField(null=True)
     pasien = models.ForeignKey(Pasien, on_delete=models.CASCADE)

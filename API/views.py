@@ -306,12 +306,12 @@ class PemeriksaanAwalView(viewsets.ViewSet):
                 pass
 
             try:
-                riwayat_penyakit = serializer.data["riwayatPenyakit"]
+                riwayat_penyakit = serializer.data["riwayat_penyakit"]
             except:
                 pass
 
             try:
-                tekanan_darah = float(serializer.data["tekananDarah"])
+                tekanan_darah = serializer.data["tekanan_darah"]
             except:
                 pass
 
@@ -616,14 +616,14 @@ class FotoRontgenView(APIView):
 class PasienRekamMedisView(APIView):
     def get(self, request, format=None):
         pasien = Pasien.objects.get(user=request.user)
-        queryset = pasien.rekammedis_set.all()
+        queryset = pasien.rekammedis_set.all().order_by('-id')
         serializer = RekamMedisGetSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
 
 class RekamMedisView(APIView):
     def get(self, request, format=None):
-        queryset = RekamMedis.objects.all()
+        queryset = RekamMedis.objects.all().order_by('-id')
         serializer = RekamMedisGetSerializer(data=queryset, many=True)
         serializer.is_valid()
         return Response(serializer.data)
