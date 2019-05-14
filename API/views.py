@@ -29,6 +29,8 @@ import calendar
 from dateutil import tz
 import functools
 from django.template.loader import render_to_string
+import csv  
+from django.http import HttpResponse
 
 
 class DokterLoginView(viewsets.ViewSet):
@@ -1117,6 +1119,50 @@ class JawabanSurveyView(APIView):
             )
             jawabanSurvey.save()
         return Response(serializer.data)
+
+class GenerateCsvView(APIView):
+    def get(self, request, format=None):
+        response = HttpResponse(content_type='text/csv')  
+        response['Content-Disposition'] = 'attachment; filename="file.csv"'  
+        writer = csv.writer(response)  
+        writer.writerow(['id', 'nama_pasien','jenis_kelamin', 'nama_dokter', '0', '1','2','3','4','5','6','7','8','9','10','di','ci','created_at']) 
+        rekamMedis = RekamMedis.objects.all()
+        for a in rekamMedis:
+            ci=0
+            di=0
+            for gigi in a.gigi_set.all():
+                if (gigi.ci!=None):
+                    ci+=gigi.ci
+                if (gigi.di!=None):
+                    di+=gigi.di
+            ci = ci/6
+            di = di/6
+            con0=con1=con2=con3=con4=con5=con6=con7=con8=con9=con10=0
+            for b in(a.gigi_set.all().values()):
+                if(0 in list(b.values())[3:8]):
+                    con0+=1
+                if(1 in list(b.values())[3:8]):
+                    con1+=1
+                if(2 in list(b.values())[3:8]):
+                    con2+=1
+                if(3 in list(b.values())[3:8]):
+                    con3+=1
+                if(4 in list(b.values())[3:8]):
+                    con4+=1
+                if(5 in list(b.values())[3:8]):
+                    con5+=1
+                if(6 in list(b.values())[3:8]):
+                    con6+=1
+                if(7 in list(b.values())[3:8]):
+                    con7+=1
+                if(8 in list(b.values())[3:8]):
+                    con8+=1
+                if(9 in list(b.values())[3:8]):
+                    con9+=1
+                if(10 in list(b.values())[3:8]):
+                    con10+=1
+            writer.writerow([a.id, a.pasien.nama, a.pasien.jenisKelamin , a.dokter.nama, con0,con1, con2, con3, con4, con5, con6, con7, con8, con9, con10, di, ci,a.created_at])   
+        return response  
 
 class RekamMedisPDFView(APIView):
     def get(self, request, id, format=None):
