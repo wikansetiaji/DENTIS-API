@@ -1126,9 +1126,9 @@ class JawabanSurveyView(APIView):
 class GenerateCsvView(APIView):
     def get(self, request, format=None):
         response = HttpResponse(content_type='text/csv')  
-        response['Content-Disposition'] = 'attachment; filename="file.csv"'  
+        response['Content-Disposition'] = 'attachment; filename="data_row_'+datetime.now().strftime("%m/%d/%Y, %H:%M:%S")+'.csv"'  
         writer = csv.writer(response)  
-        writer.writerow(['id', 'nama_pasien','jenis_kelamin', 'nama_dokter', '0', '1','2','3','4','5','6','7','8','9','10','di','ci','created_at']) 
+        writer.writerow(['id', 'nama_pasien','jenis_kelamin', 'nama_dokter', 'sound', 'caries','filled with caries','filled no caries','missing due caries','missing for another reason','fissure sealant','fix dental crown, abutment, veneer','unerupted','persistance','whitespot','di','ci','created_at']) 
         rekamMedis = RekamMedis.objects.all()
         for a in rekamMedis:
             ci=0
