@@ -493,7 +493,8 @@ class StatisticsView(APIView):
             result = frequency
             stats = Statistics(tipe="pengunjung", result=result)
             dt = datetime.now()
-            stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
+            # stats.image.save("pengunjung_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.image.save("pengunjung.png", content_file, save=False)
             stats.save()
             plt.clf()
             plt.close()
@@ -510,41 +511,39 @@ class StatisticsView(APIView):
             all_gigi_plot = []
             for gigi in serializer.data:
                 status_gigi = list(gigi.values())[1:]
-                print(status_gigi)
                 status_gigi = [x for x in status_gigi if x is not None]
-                print(status_gigi)
                 all_gigi.append(status_gigi)
                 all_gigi_plot.append(status_gigi)
 
-            print(all_gigi)
             all_gigi = np.hstack(np.array(all_gigi))
-            all_gigi_plot = np.hstack(np.array(all_gigi_plot))
             element = Counter(all_gigi).keys() 
             frequency = Counter(all_gigi).values()
-            element_plot = Counter(all_gigi_plot).keys() 
-            frequency_plot = Counter(all_gigi_plot).values()
 
             element = list(element)
             frequency = list(np.array(list(frequency)) - 1)
-
+            if len(all_gigi_plot) == 0:
+                frequency = []
+                result_final = [0 for x in range(12)]
             figure = io.BytesIO()
             
             fig1, ax1 = plt.subplots()
             colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
             '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
-            ax1.pie(frequency_plot, colors=colors, autopct='%1.1f%%')
+            ax1.pie(frequency, colors=colors, autopct='%1.1f%%')
             ax1.axis('equal')
             plt.tight_layout()
             plt.savefig(figure, format="png")
             
             content_file = ImageFile(figure)
             result = np.array(frequency)
-            total = np.sum(result)
-            result = (result / total) * 100
-            result_final = list(np.around(result, decimals=2))
+            if np.sum(result) != 0:
+                total = np.sum(result)
+                result = (result / total) * 100
+                result_final = list(np.around(result, decimals=2))
             stats = Statistics(tipe="kondisi", result=result_final)
             dt = datetime.now()
-            stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+            # stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.image.save("kondisi.png", content_file, save=False)
             stats.save()
             plt.clf()
             plt.close()
@@ -583,12 +582,16 @@ class StatisticsView(APIView):
             
             content_file = ImageFile(figure)
             result = np.array(frequency)
-            total = np.sum(result)
-            result = (result / total) * 100
-            result_final = list(np.around(result, decimals=2))
+            if np.sum(result) == 0:
+                result_final = list(result)
+            else:
+                total = np.sum(result)
+                result = (result / total) * 100
+                result_final = list(np.around(result, decimals=2))
             stats = Statistics(tipe="ohis", result=result_final)
             dt = datetime.now()
-            stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
+            # stats.image.save("ohis_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.image.save("ohis.png", content_file, save=False)
             stats.save()
             plt.clf()
             plt.close()
