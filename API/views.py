@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from .models import Statistics
 from django.http import Http404
+from collections import OrderedDict
 from .permissions import *
 import requests
 import json
@@ -501,7 +502,102 @@ class StatisticsView(APIView):
             
             serializer = StatisticsSerializer(stats)
             return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        ## Statistik Kondisi Prevalensi
+        elif tipe == 'kondisiOrang':
+            kondisi_keseluruhan = []
+            for idPasien in ids:
+                pasien = Pasien.objects.get(id=int(idPasien))
+                queryset = pasien.rekammedis_set.all()
+                serializer = RekamMedisGetSerializer(queryset, many=True)
+                kondisi = []
+                for rekammedis in serializer.data:
+                    kondisi.append(rekammedis["gigi_set"])
+                ## Flat Dictionary
+                flat_list = [item for sublist in kondisi for item in sublist]
+                d = [d['d'] for d in flat_list]
+                l = [d['l'] for d in flat_list]
+                o = [d['o'] for d in flat_list]
+                m = [d['m'] for d in flat_list]
+                v = [d['v'] for d in flat_list]
+                values = np.concatenate([d,l,o,m,v])
+                kondisi_keseluruhan.append(list(Counter(values).keys()))
+            flat_list = np.concatenate(kondisi_keseluruhan)
+            temp = np.concatenate([flat_list, [x for x in range(11)]])
+            temp = Counter(temp)
+            ord_dict = OrderedDict(sorted(temp.items()))
+            print(ord_dict.keys())
+            result = list(np.array(list(ord_dict.values()))-1)
+            
+            ## Plot
+            if np.sum(result) == 0:
+                result = []
+            figure = io.BytesIO()
+            fig1, ax1 = plt.subplots()
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
+            ax1.pie(result, colors=colors, autopct='%1.1f%%')
+            ax1.axis('equal')
+            plt.tight_layout()
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            stats = Statistics(tipe="kondisiOrang", result=result)
+            # dt = datetime.now()
+            # stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.image.save("kondisiOrang.png", content_file, save=False)
+            stats.save()
+            plt.clf()
+            plt.close()
 
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        ## Statistik OHIS Prevalensi
+        elif tipe == 'ohisOrang':
+            ohis_keseluruhan = []
+            for idPasien in ids:
+                pasien = Pasien.objects.get(id=int(idPasien))
+                queryset = pasien.rekammedis_set.all()
+                serializer = RekamMedisGetSerializer(queryset, many=True)
+                ohis = []
+                for rekammedis in serializer.data:
+                    ohis.append(rekammedis["ohis_set"])
+                ## Flat Dictionary
+                flat_list = [item for sublist in ohis for item in sublist]
+                k = [d['kondisi'] for d in flat_list]
+                ohis_keseluruhan.append(list(Counter(k).keys()))
+            flat_list = np.concatenate(ohis_keseluruhan)
+            temp = np.concatenate([flat_list, ['Baik','Sedang','Buruk']])
+            temp = Counter(temp)
+            ord_dict = OrderedDict(sorted(temp.items()))
+            print(ord_dict.keys())
+            result = list(np.array(list(ord_dict.values()))-1)
+            
+            ## Plot
+            if np.sum(result) == 0:
+                result = []
+            figure = io.BytesIO()
+            fig1, ax1 = plt.subplots()
+            colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
+            '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']
+            ax1.pie(result, colors=colors, autopct='%1.1f%%')
+            ax1.axis('equal')
+            plt.tight_layout()
+            plt.savefig(figure, format="png")
+            
+            content_file = ImageFile(figure)
+            stats = Statistics(tipe="ohisOrang", result=result)
+            # dt = datetime.now()
+            # stats.image.save("kondisi_" + str(dt.microsecond) + ".png", content_file, save=False)
+            stats.image.save("ohisOrang.png", content_file, save=False)
+            stats.save()
+            plt.clf()
+            plt.close()
+
+            serializer = StatisticsSerializer(stats)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
         ## Statistik Kondisi
         elif tipe == 'kondisi':
             queryset = Gigi.objects.filter(rekam_medis_id__in=record_ids)
@@ -524,8 +620,8 @@ class StatisticsView(APIView):
             if len(all_gigi_plot) == 0:
                 frequency = []
                 result_final = [0 for x in range(12)]
-            figure = io.BytesIO()
             
+            figure = io.BytesIO()
             fig1, ax1 = plt.subplots()
             colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
             '#F6D4D2', '#C197D2', '#0080C4', '#0000A3', '#613659', '#00176F']

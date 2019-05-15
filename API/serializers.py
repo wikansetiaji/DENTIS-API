@@ -598,12 +598,13 @@ class FotoRontgenGetSerializer(serializers.Serializer):
 class RekamMedisGetSerializer(serializers.ModelSerializer):
     gigi_set = GigiSerializer(many=True)
     fotorontgen_set = FotoRontgenGetSerializer(many=True)
+    ohis_set = OHISGetSerializer(many=True)
     dokter = DokterGetSerializer()
     pasien = PasienGetSerializer()
     penanganan = PenangananSerializer()
     class Meta:
         model = RekamMedis
-        fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set','penanganan')
+        fields = ('id','dokter','pasien', 'created_at', 'anamnesa', 'alergi', 'riwayat_penyakit','tekanan_darah','berat','tinggi','fotorontgen_set','gigi_set','ohis_set','penanganan')
 
 class JadwalPraktekGetSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
