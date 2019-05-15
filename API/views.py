@@ -530,8 +530,6 @@ class StatisticsView(APIView):
             result = list(np.array(list(ord_dict.values()))-1)
             
             ## Plot
-            if np.sum(result) == 0:
-                result = []
             figure = io.BytesIO()
             fig1, ax1 = plt.subplots()
             colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
@@ -575,8 +573,6 @@ class StatisticsView(APIView):
             result = list(np.array(list(ord_dict.values()))-1)
             
             ## Plot
-            if np.sum(result) == 0:
-                result = []
             figure = io.BytesIO()
             fig1, ax1 = plt.subplots()
             colors = ['#4878BC', '#75CDD7', '#F652A0', '#603F8B', '#B1B1BF',\
@@ -603,7 +599,7 @@ class StatisticsView(APIView):
             queryset = Gigi.objects.filter(rekam_medis_id__in=record_ids)
             serializer = GigiSerializer(queryset, many=True)
 
-            all_gigi = [[x for x in range(-1, 11)]]
+            all_gigi = [[x for x in range(11)]]
             all_gigi_plot = []
             for gigi in serializer.data:
                 status_gigi = list(gigi.values())[1:]
@@ -618,7 +614,6 @@ class StatisticsView(APIView):
             element = list(element)
             frequency = list(np.array(list(frequency)) - 1)
             if len(all_gigi_plot) == 0:
-                frequency = []
                 result_final = [0 for x in range(12)]
             
             figure = io.BytesIO()
@@ -839,7 +834,7 @@ class AppointmentAvailableView(APIView):
 
 class ManajerReportView(APIView):
     def get(self, request, format=None):
-        list_tipe = ['pengunjung', 'kondisi', 'ohis']
+        list_tipe = ['pengunjung', 'kondisiOrang', 'kondisi', 'ohisOrang', 'ohis']
         image_urls = []
         results = []
         for item in list_tipe:
@@ -847,14 +842,13 @@ class ManajerReportView(APIView):
             serializer = StatisticsSerializerURL(data=stats.data)
             serializer.is_valid()
             x = serializer.data["result"][1:-1].split(', ')
+            print(item)
             x = [float(i) for i in x]
+            if item == 'kondisiOrang' or item == 'ohisOrang':
+                x = [int(i) for i in x]
             image_urls.append(serializer.data["image"])
             results.append(x)
         orang = [int(i) for i in results[0]]
-
-        print(results[1])
-
-        print(image_urls)
 
         jenis_survey = ['tf', 'range']
         no_tf = [x+1 for x in range(19)]
@@ -906,10 +900,25 @@ class ManajerReportView(APIView):
             <li>Minggu: {} orang</li>
         </ul>
 
-        <p>Statistik Kondisi Gigi
+        <p>Statistik Kondisi Gigi (Prevalensi)
         <img src="{}">
         <ul>
-            <li>Normal: {}%</li>
+            <li>Sound: {} orang</li>
+            <li>Caries: {} orang</li>
+            <li>Filled with Caries: {} orang</li>
+            <li>Filled no Caries: {} orang</li>
+            <li>Missing due to Caries: {} orang</li>
+            <li>Missing for Another Reason: {} orang</li>
+            <li>Fissure Sealant: {} orang</li>
+            <li>Fix dental prosthesis/crown, abutment,veneer: {} orang</li>
+            <li>Unerupted: {} orang</li>
+            <li>Not recorded: {} orang</li>
+            <li>Whitespot: {} orang</li>
+        </ul>
+
+        <p>Statistik Kondisi Gigi (Keseluruhan)
+        <img src="{}">
+        <ul>
             <li>Sound: {}%</li>
             <li>Caries: {}%</li>
             <li>Filled with Caries: {}%</li>
@@ -923,7 +932,15 @@ class ManajerReportView(APIView):
             <li>Whitespot: {}%</li>
         </ul>
 
-        <p>Statistik Kondisi OHIS
+        <p>Statistik Kondisi OHIS (Prevalensi)
+        <img src="{}">
+        <ul>
+            <li>Baik: {} orang</li>
+            <li>Buruk: {} orang</li>
+            <li>Sedang: {} orang</li>
+        </ul>
+
+        <p>Statistik Kondisi OHIS (Keseluruhan)
         <img src="{}">
         <ul>
             <li>Baik: {}%</li>
@@ -1191,7 +1208,7 @@ class ManajerReportView(APIView):
             <br></li>
         </ul>
         
-        '''.format(image_urls[0], *orang, image_urls[1], *results[1], image_urls[2], *results[2], *flat_list), base_url=request.build_absolute_uri())
+        '''.format(image_urls[0], *orang, image_urls[1], *results[1], image_urls[2], *results[2], image_urls[3], *results[3], image_urls[4], *results[4], *flat_list), base_url=request.build_absolute_uri())
         css = CSS(string='@page { size: A4; margin: 1cm }')
         html.write_pdf('manajer_report.pdf', stylesheets=[css])
         return Response("Sukses", status=status.HTTP_200_OK)
