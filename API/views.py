@@ -524,7 +524,9 @@ class StatisticsView(APIView):
                 kondisi_keseluruhan.append(list(Counter(values).keys()))
             flat_list = np.concatenate(kondisi_keseluruhan)
             temp = np.concatenate([flat_list, [x for x in range(11)]])
+            temp = [x for x in temp if x is not None]
             temp = Counter(temp)
+            print(temp)
             ord_dict = OrderedDict(sorted(temp.items()))
             print(ord_dict.keys())
             result = list(np.array(list(ord_dict.values()))-1)
