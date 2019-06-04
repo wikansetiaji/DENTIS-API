@@ -522,7 +522,12 @@ class StatisticsView(APIView):
                 v = [d['v'] for d in flat_list]
                 values = np.concatenate([d,l,o,m,v])
                 kondisi_keseluruhan.append(list(Counter(values).keys()))
-            flat_list = np.concatenate([kondisi_keseluruhan])
+            print(kondisi_keseluruhan)
+            if len(kondisi_keseluruhan) == 0:
+                flat_list = np.concatenate([kondisi_keseluruhan])
+            else:
+                flat_list = np.concatenate(kondisi_keseluruhan)
+            print(flat_list)
             temp = np.concatenate([flat_list, [x for x in range(11)]])
             temp = [x for x in temp if x is not None]
             temp = Counter(temp)
@@ -567,7 +572,12 @@ class StatisticsView(APIView):
                 flat_list = [item for sublist in ohis for item in sublist]
                 k = [d['kondisi'] for d in flat_list]
                 ohis_keseluruhan.append(list(Counter(k).keys()))
-            flat_list = np.concatenate([ohis_keseluruhan])
+            print(ohis_keseluruhan)
+            if len(ohis_keseluruhan) == 0:
+                flat_list = np.concatenate([ohis_keseluruhan])
+            else:
+                flat_list = np.concatenate(ohis_keseluruhan)
+            print(flat_list)
             temp = np.concatenate([flat_list, ['Baik','Sedang','Buruk']])
             temp = Counter(temp)
             ord_dict = OrderedDict(sorted(temp.items()))
