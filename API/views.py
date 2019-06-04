@@ -417,7 +417,8 @@ class StatisticsView(APIView):
 
         ## Get All
         today = date.today()
-        queryset = RekamMedis.objects.filter(created_at__month=today.month)
+        # queryset = RekamMedis.objects.filter(created_at__month=today.month)
+        queryset = RekamMedis.objects.all()
         serializer = RekamMedisSerializer(queryset, many=True)
         
         ids = []
