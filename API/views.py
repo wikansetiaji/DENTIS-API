@@ -522,7 +522,7 @@ class StatisticsView(APIView):
                 v = [d['v'] for d in flat_list]
                 values = np.concatenate([d,l,o,m,v])
                 kondisi_keseluruhan.append(list(Counter(values).keys()))
-            flat_list = np.concatenate(kondisi_keseluruhan)
+            flat_list = np.concatenate([kondisi_keseluruhan])
             temp = np.concatenate([flat_list, [x for x in range(11)]])
             temp = [x for x in temp if x is not None]
             temp = Counter(temp)
