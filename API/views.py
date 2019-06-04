@@ -567,7 +567,7 @@ class StatisticsView(APIView):
                 flat_list = [item for sublist in ohis for item in sublist]
                 k = [d['kondisi'] for d in flat_list]
                 ohis_keseluruhan.append(list(Counter(k).keys()))
-            flat_list = np.concatenate(ohis_keseluruhan)
+            flat_list = np.concatenate([ohis_keseluruhan])
             temp = np.concatenate([flat_list, ['Baik','Sedang','Buruk']])
             temp = Counter(temp)
             ord_dict = OrderedDict(sorted(temp.items()))
